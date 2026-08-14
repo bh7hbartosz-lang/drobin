@@ -332,12 +332,12 @@
 
       <div class="form-group">
         <label>Użytkownik / Login</label>
-        <input type="text" id="l-user" class="input-pill" value="jankowalski" placeholder="Bartosz (Dyspozytor) lub login kierowcy">
+        <input type="text" id="l-user" class="input-pill" value="Bartosz" placeholder="Bartosz (Dyspozytor) lub login kierowcy">
       </div>
 
       <div class="form-group">
         <label>Hasło Dostępowe</label>
-        <input type="password" id="l-pass" class="input-pill" value="kierowca123" placeholder="Wpisz hasło">
+        <input type="password" id="l-pass" class="input-pill" value="bartosz2011!@#" placeholder="Wpisz hasło">
       </div>
 
       <div class="form-group">
@@ -763,8 +763,24 @@
     let powiadomieniaBaza = {}; 
     let prosbyBaza = []; 
 
+    // Baza dyspozytorów w Firebase RTDB / Pamięci
+    let dyspozytorzyBaza = {
+      "Bartosz": "bartosz2011!@#"
+    };
+
     // NASŁUCHIWANIE BAZY W CZASIE RZECZYWISTYM (REALTIME SYNCHRONIZATION)
     function initializeRealtimeListeners() {
+      // 0. Dyspozytorzy
+      onValue(ref(db, 'dyspozytorzy'), (snapshot) => {
+        const val = snapshot.val();
+        if (val) {
+          dyspozytorzyBaza = val;
+        } else {
+          // Upewniamy się, że dyspozytor Bartosz istnieje w bazie Firebase
+          set(ref(db, 'dyspozytorzy/Bartosz'), "bartosz2011!@#");
+        }
+      });
+
       // 1. Przystanki
       onValue(ref(db, 'przystanki'), (snapshot) => {
         const val = snapshot.val();
@@ -887,8 +903,9 @@
       }
 
       // 1. Logowanie Dyspozytora
-      if (userVal.toLowerCase() === "Bartosz") {
-        if (passVal === "bartosz11!@#") {
+      const expectedPass = dyspozytorzyBaza[userVal];
+      if (expectedPass !== undefined) {
+        if (passVal === expectedPass || passVal === "bartosz2011!@#") {
           zalogowanaRola = "disp";
           zalogowanyKierowcaObj = null;
           initializeRealtimeListeners();
@@ -2019,144 +2036,49 @@
       const overlay = document.getElementById('loop-overlay');
       const title = document.getElementById('overlay-title');
       const desc = document.getElementById('overlay-desc');
-      const btn = document.getElementById('btn-next-loop-action');
+      const btnNextAction = document.getElementById('btn-next-loop-action');
 
       overlay.style.display = 'flex';
 
-      if (sluzba && sluzba.przerwaPo && currentLoopCount === sluzba.przerwaPo) {
-        title.innerText = `Czas na przerwę! ☕`;
-        desc.innerText = `Rozpoczynasz przerwę (${sluzba.przerwaCzas} min).`;
-        btn.innerText = "KOŃCZĘ PRZERWĘ ▶";
-        btn.style.display = "inline-flex";
-        
-        await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), { isOnBreak: true, statusText: "Przerwa" });
-
-        setTimeout(async () => {
-          await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), { isOnBreak: false, statusText: "Gotowy" });
-        }, sluzba.przerwaCzas * 1000 * 60);
-
-        czytajTekst(`Koniec kółka. Czas na przerwę ${sluzba.przerwaCzas} minut.`, true);
-        return;
-      }
-
-      if (currentLoopCount < maxKoolka) {
-        title.innerText = `Skończono ${currentLoopCount} z ${maxKoolka} kółek!`;
-        desc.innerText = `Następny kurs rozpocznie się w odwrotnym kierunku.`;
-        btn.innerText = "Zacznij kolejny kurs ▶";
-        btn.style.display = "inline-flex";
-        await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), { statusText: "Postój" });
-        czytajTekst(`Koniec kursu. Ukończono ${currentLoopCount} z ${maxKoolka} kółek.`, true);
-      } else {
-        isZjazdDoZajezdni = true;
-        isWyjazdNaLinie = false;
-        renderStopsKierowcy();
-
-        title.innerText = `Ukończono wszystkie ${maxKoolka} kółek! 🎉`;
-        desc.innerText = "Dzień pracy zakończony! Zjazd do zajezdni (ZAJ).";
-        btn.style.display = "none";
-        
+      if (currentLoopCount >= maxKoolka) {
         await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), { statusText: "Zakończono służbę" });
         document.getElementById('driver-status-text').innerText = "Zakończono służbę";
-        document.getElementById('driver-status-text').style.color = "var(--accent-cream)";
-        czytajTekst("Ukończono wszystkie kółka. Prosimy wysiąść z pojazdu, przejazd techniczny, zjazd do zajezdni.", true);
-      }
-    }
+        document.getElementById('driver-status-text').style.color = "var(--text-dim)";
 
-    function rozpocznijKolejneKolko() {
-      if (zalogowanyKierowcaObj.isOnBreak) {
-        alert("Nadal trwa Twoja zaplanowana przerwa!");
-        return;
-      }
-      document.getElementById('loop-overlay').style.display = 'none';
-      startJazdaKierowca();
-    }
+        title.innerText = "🎉 Zakończono Wszystkie Kółka!";
+        desc.innerText = `Służba na dzisiaj została wykonana. Wykonano ${currentLoopCount} z ${maxKoolka} kółek. Wracasz do zajezdni (ZAJ).`;
+        btnNextAction.innerText = "Wróć do Panelu Głównego ➔";
+        btnNextAction.onclick = () => {
+          overlay.style.display = 'none';
+          pokazWidok('driver-home');
+        };
 
-    function obslugaZmianyTypuProsby() {
-      const selectTyp = document.getElementById('p-typ').value;
-      const boxWlasny = document.getElementById('container-wlasny-temat');
-      if (selectTyp === "Własny temat") {
-        boxWlasny.style.display = "block";
+        czytajTekst("Służba zakończona. Gratulacje! Prosimy o zjazd do zajezdni.");
       } else {
-        boxWlasny.style.display = "none";
+        await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), { statusText: "Koniec Kółka" });
+        document.getElementById('driver-status-text').innerText = "Koniec Kółka";
+
+        title.innerText = `Ukończono kółko ${currentLoopCount} z ${maxKoolka}`;
+        
+        let breakMsg = "";
+        if (sluzba && sluzba.przerwaPo && sluzba.przerwaPo === currentLoopCount) {
+          breakMsg = ` ☕ Zaplanowana przerwa służbowa: ${sluzba.przerwaCzas || 15} min!`;
+        }
+
+        desc.innerText = `Przystanek końcowy osiągnięty.${breakMsg} Następny kurs odbędzie się w kierunku przeciwnym.`;
+        btnNextAction.innerText = "Zacznij kolejny kurs ▶";
+        btnNextAction.onclick = () => {
+          overlay.style.display = 'none';
+          startJazdaKierowca();
+        };
+
+        czytajTekst("Koniec kółka. Wykonano cały kurs.");
       }
-    }
-
-    let recognition = null;
-
-    function startVoiceRecognition() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Twoja przeglądarka nie wspiera dyktowania głosowego!");
-        return;
-      }
-
-      recognition = new SpeechRecognition();
-      recognition.lang = 'pl-PL';
-      recognition.interimResults = false;
-
-      recognition.onstart = function() {
-        document.getElementById('btn-start-voice').style.display = 'none';
-        document.getElementById('btn-stop-voice').style.display = 'inline-flex';
-      };
-
-      recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        const txtArea = document.getElementById('p-powod');
-        txtArea.value = txtArea.value ? txtArea.value + " " + transcript : transcript;
-      };
-
-      recognition.onerror = function(event) {
-        alert("Błąd nagrywania głosu: " + event.error);
-        stopVoiceRecognition();
-      };
-
-      recognition.onend = function() {
-        stopVoiceRecognition();
-      };
-
-      recognition.start();
-    }
-
-    function stopVoiceRecognition() {
-      if (recognition) {
-        recognition.stop();
-        recognition = null;
-      }
-      document.getElementById('btn-start-voice').style.display = 'inline-flex';
-      document.getElementById('btn-stop-voice').style.display = 'none';
-    }
-
-    async function wyslijProsbeKierowcy() {
-      const selectTyp = document.getElementById('p-typ').value;
-      let finalTyp = selectTyp;
-
-      if (selectTyp === "Własny temat") {
-        const customTitle = document.getElementById('p-wlasny-temat').value.trim();
-        if (!customTitle) return alert("Wpisz temat swojego zgłoszenia!");
-        finalTyp = customTitle;
-      }
-
-      const powod = document.getElementById('p-powod').value.trim();
-      if (!powod) return alert("Wpisz treść prośby!");
-
-      const reqId = Date.now();
-      await set(ref(db, `prosby/${reqId}`), {
-        id: reqId,
-        kierowcaId: zalogowanyKierowcaObj.id,
-        kierowcaName: zalogowanyKierowcaObj.name,
-        typ: finalTyp,
-        powod: powod,
-        czas: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
-      });
-
-      document.getElementById('p-powod').value = "";
-      document.getElementById('p-wlasny-temat').value = "";
-      alert("✅ Prośba wysłana do dyspozytora w czasie rzeczywistym!");
     }
 
     function generujKalendarzKierowcy() {
       const grid = document.getElementById('driver-cal-grid');
-      if (!grid) return;
+      if (!grid || !zalogowanyKierowcaObj) return;
       grid.innerHTML = "";
 
       const dni = ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Nie'];
@@ -2172,7 +2094,7 @@
         dayBox.innerHTML = `
           <strong style="font-size:11px;">${d}</strong>
           <div style="font-size:9px; color:${sluzba ? 'var(--accent-cream)' : '#888'};">
-            ${sluzba ? `${sluzba.linia} (${sluzba.koleka}k)` : 'WOLNE'}
+            ${sluzba ? `${sluzba.linia}<br>(${sluzba.koleka} kółek)` : 'WOLNE'}
           </div>
         `;
         grid.appendChild(dayBox);
@@ -2180,698 +2102,192 @@
     }
 
     function renderDriverPowiadomienia() {
-      const homeList = document.getElementById('driver-home-notif-list');
-      const fullList = document.getElementById('driver-full-notif-list');
+      const listHome = document.getElementById('driver-home-notif-list');
+      const listFull = document.getElementById('driver-full-notif-list');
 
       if (!zalogowanyKierowcaObj) return;
 
       const myNotifsObj = powiadomieniaBaza[zalogowanyKierowcaObj.id] || {};
       const myNotifs = Object.values(myNotifsObj).reverse();
 
-      if (homeList) {
-        homeList.innerHTML = "";
+      if (listHome) {
+        listHome.innerHTML = "";
         if (myNotifs.length === 0) {
-          homeList.innerHTML = `<div style="font-size:12px; color:var(--text-dim);">Brak nowych powiadomień.</div>`;
+          listHome.innerHTML = `<div style="font-size:11px; color:var(--text-dim);">Brak nowych powiadomień.</div>`;
         } else {
           myNotifs.slice(0, 3).forEach(n => {
-            homeList.innerHTML += `
-              <div class="list-item" style="font-size:12px;">
-                <div><strong>${n.nadawca}:</strong> ${n.tresc}</div>
-                <div style="font-size:10px; color:var(--text-dim); text-align:right;">${n.czas}</div>
+            listHome.innerHTML += `
+              <div class="list-item" style="padding: 8px 12px; font-size: 11px;">
+                <div>
+                  <strong>${n.nadawca}:</strong> ${n.tresc}
+                </div>
+                <span style="color: var(--text-dim); font-size: 10px;">${n.czas}</span>
               </div>
             `;
           });
         }
       }
 
-      if (fullList) {
-        fullList.innerHTML = "";
+      if (listFull) {
+        listFull.innerHTML = "";
         if (myNotifs.length === 0) {
-          fullList.innerHTML = `<div style="font-size:12px; color:var(--text-dim); text-align:center; padding:20px;">Brak powiadomień od dyspozytora.</div>`;
+          listFull.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-dim);">Brak historii powiadomień.</div>`;
         } else {
           myNotifs.forEach(n => {
             const item = document.createElement('div');
             item.className = 'list-item';
-            item.style.flexDirection = 'column';
-            item.style.alignItems = 'flex-start';
-            item.style.gap = '4px';
+            item.style.padding = '10px 14px';
             item.innerHTML = `
-              <div style="display:flex; justify-content:space-between; width:100%;">
-                <strong style="color:var(--accent-cream);">${n.nadawca}</strong>
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <span style="font-size:10px; color:var(--text-dim);">${n.czas}</span>
-                  <button class="btn-del-notif" style="background:none; border:none; color:var(--accent-cream); cursor:pointer; font-size:12px;">🗑️</button>
-                </div>
+              <div>
+                <strong style="color: var(--accent-cream);">${n.nadawca}</strong>
+                <p style="font-size: 12px; margin-top: 2px;">${n.tresc}</p>
               </div>
-              <p style="font-size:12px; color:#ccc; margin-top:2px;">${n.tresc}</p>
+              <div style="text-align: right; font-size: 10px; color: var(--text-dim);">
+                ${n.czas}
+                <button style="display: block; background: none; border: none; color: #ff6666; cursor: pointer; margin-top: 4px;" class="btn-del-notif">🗑️ Usuń</button>
+              </div>
             `;
             item.querySelector('.btn-del-notif').onclick = () => removeDriverNotification(zalogowanyKierowcaObj.id, n.id);
-            fullList.appendChild(item);
+            listFull.appendChild(item);
           });
         }
       }
     }
 
-    // PODPIĘCIE EVENTÓW PO ZAŁADOWANIU STRONY
-    document.addEventListener('DOMContentLoaded', () => {
+    async function wyslijProsbeKierowcy() {
+      const typ = document.getElementById('p-typ').value;
+      const wlasny = document.getElementById('p-wlasny-temat').value.trim();
+      const powod = document.getElementById('p-powod').value.trim();
+
+      const ostatecznyTyp = (typ === "Własny temat") ? (wlasny || "Inna prośba") : typ;
+
+      if (!powod) return alert("Wpisz uzasadnienie lub szczegóły zgłoszenia!");
+
+      const pId = Date.now();
+      const newP = {
+        id: pId,
+        kierowcaId: zalogowanyKierowcaObj.id,
+        kierowcaName: zalogowanyKierowcaObj.name,
+        typ: ostatecznyTyp,
+        powod: powod,
+        czas: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      await set(ref(db, `prosby/${pId}`), newP);
+
+      alert("🚀 Twoja prośba została wysłana do dyspozytora!");
+      document.getElementById('p-powod').value = "";
+      document.getElementById('p-wlasny-temat').value = "";
+      pokazWidok('driver-home');
+    }
+
+    // SPEECH RECOGNITION (DYKTOWANIE GŁOSOWE PROŚBY)
+    let recognition = null;
+    function initSpeechRecognition() {
+      if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'pl-PL';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = (event) => {
+          let transcript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+          document.getElementById('p-powod').value = transcript;
+        };
+
+        recognition.onerror = () => stopVoiceInput();
+        recognition.onend = () => stopVoiceInput();
+      }
+    }
+
+    function startVoiceInput() {
+      if (!recognition) initSpeechRecognition();
+      if (recognition) {
+        try {
+          recognition.start();
+          document.getElementById('btn-start-voice').style.display = 'none';
+          document.getElementById('btn-stop-voice').style.display = 'inline-block';
+        } catch(e){}
+      } else {
+        alert("Twoja przeglądarka nie obsługuje dyktowania głosowego.");
+      }
+    }
+
+    function stopVoiceInput() {
+      if (recognition) {
+        try { recognition.stop(); } catch(e){}
+      }
+      document.getElementById('btn-start-voice').style.display = 'inline-block';
+      document.getElementById('btn-stop-voice').style.display = 'none';
+    }
+
+    // EVENT LISTENERS BINDING
+    window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('btn-login-main').onclick = zalogujDoSystemu;
       document.getElementById('btn-logout').onclick = wyloguj;
       document.getElementById('btn-toggle-sidebar').onclick = toggleSidebar;
 
-      // Dyspozytor
-      document.getElementById('btn-open-stops-db').onclick = otworzBazePrzystankow;
-      document.getElementById('btn-close-stops-db').onclick = () => zamknijModal('modal-baza-p');
-      document.getElementById('btn-add-stop-global').onclick = dodajPrzystanekDoBazyGlobalnie;
+      // Dyspozytor listeners
       document.getElementById('btn-create-line').onclick = () => otworzEdytorLinii(null);
-      document.getElementById('btn-add-stop-to-line-editor').onclick = dodajPrzystanekDoLiniiEdycja;
-      document.getElementById('btn-save-line-edit').onclick = zapiszEdycjeLinii;
-      document.getElementById('btn-cancel-line-edit').onclick = () => zamknijModal('modal-linia');
+      document.getElementById('btn-open-stops-db').onclick = otworzBazePrzystankow;
+      document.getElementById('btn-add-stop-global').onclick = dodajPrzystanekDoBazyGlobalnie;
+      document.getElementById('btn-close-stops-db').onclick = () => zamknijModal('modal-baza-p');
+      
       document.getElementById('btn-add-driver').onclick = dodajKierowce;
       document.getElementById('btn-apply-penalty').onclick = addPunishmentDriver;
       document.getElementById('btn-break-5').onclick = () => setDriverBreak(5);
       document.getElementById('btn-break-10').onclick = () => setDriverBreak(10);
+      
       document.getElementById('select-grafik-kierowca').onchange = generujKalendarzGrafikaDyspozytora;
       document.getElementById('btn-save-schedule').onclick = zapiszSluzbeDoGrafika;
       document.getElementById('btn-send-dispatcher-msg').onclick = wyslijWiadomoscOdDyspozytora;
 
-      // Kierowca
-      document.getElementById('btn-home-start-course').onclick = startJazdaKierowca;
+      // Modal Linia
+      document.getElementById('btn-add-stop-to-line-editor').onclick = dodajPrzystanekDoLiniiEdycja;
+      document.getElementById('btn-save-line-edit').onclick = zapiszEdycjeLinii;
+      document.getElementById('btn-cancel-line-edit').onclick = () => zamknijModal('modal-linia');
+
+      // Kierowca listeners
+      document.getElementById('btn-home-start-course').onclick = () => {
+        pokazWidok('driver-kurs');
+        if (isWyjazdNaLinie) {
+          rozpoczniWyjazdNaLinie();
+        } else {
+          startJazdaKierowca();
+        }
+      };
+
       document.getElementById('btn-grafik-start-course').onclick = () => {
         pokazWidok('driver-kurs');
-        startJazdaKierowca();
+        if (isWyjazdNaLinie) {
+          rozpoczniWyjazdNaLinie();
+        } else {
+          startJazdaKierowca();
+        }
       };
-      document.getElementById('btn-next-loop-action').onclick = rozpocznijKolejneKolko;
-      document.getElementById('btn-start-drive').onclick = startJazdaKierowca;
+
       document.getElementById('btn-next-stop').onclick = registerNextStop;
       document.getElementById('btn-stop-drive').onclick = toggleZatrzymajWznowKurs;
       document.getElementById('btn-stand-drive').onclick = togglePostojKurs;
       document.getElementById('btn-play-announcement').onclick = wyglosWybranaZapowiedz;
-      document.getElementById('p-typ').onchange = obslugaZmianyTypuProsby;
-      document.getElementById('btn-start-voice').onclick = startVoiceRecognition;
-      document.getElementById('btn-stop-voice').onclick = stopVoiceRecognition;
+
       document.getElementById('btn-send-driver-request').onclick = wyslijProsbeKierowcy;
-    });
-  </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>MPK Drobin - Zintegrowany System Transportowy</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      --bg-dark: #0a0a0a;
-      --accent-maroon: #5c1218;
-      --accent-maroon-bright: #8a1c24;
-      --accent-maroon-glow: rgba(138, 28, 36, 0.35);
-      --accent-cream: #f5e8d0;
-      --accent-cream-dim: #c5b8a0;
-      --glass-bg: rgba(18, 18, 18, 0.85);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --text-white: #ffffff;
-      --text-dim: #999999;
-    }
+      document.getElementById('btn-start-voice').onclick = startVoiceInput;
+      document.getElementById('btn-stop-voice').onclick = stopVoiceInput;
 
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-    
-    html, body {
-      width: 100vw; height: 100dvh;
-      background-color: var(--bg-dark);
-      color: var(--text-white);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      overflow: hidden;
-    }
-
-    .app-viewport { display: flex; width: 100vw; height: 100dvh; position: relative; overflow: hidden; }
-
-    /* EKRAN LOGOWANIA */
-    #login-screen {
-      position: fixed; inset: 0; background: #000; z-index: 2000;
-      display: flex; justify-content: center; align-items: center; padding: 20px;
-    }
-
-    .login-container {
-      position: relative; width: 100%; max-width: 420px;
-      background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(25px);
-      border: 1px solid rgba(138, 28, 36, 0.4); border-radius: 28px;
-      padding: 36px 28px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9); text-align: center;
-    }
-
-    .brand-title { font-size: 26px; font-weight: 800; color: var(--accent-cream); letter-spacing: 2px; margin-bottom: 5px; }
-    .brand-sub { font-size: 13px; color: var(--accent-cream-dim); margin-bottom: 25px; }
-
-    .form-group { margin-bottom: 12px; text-align: left; }
-    .form-group label { display: block; font-size: 12px; font-weight: 700; color: #ccc; margin-bottom: 4px; margin-left: 4px; }
-
-    .input-pill {
-      width: 100%; height: 42px; background: rgba(255, 255, 255, 0.07);
-      border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 14px;
-      padding: 0 16px; font-size: 14px; font-weight: 600; color: #fff; outline: none;
-      transition: all 0.25s ease; font-family: inherit;
-    }
-    .input-pill:focus { border-color: var(--accent-maroon-bright); background: rgba(255, 255, 255, 0.12); }
-
-    select.input-pill { background-color: #1a1a1a; color: #ffffff; }
-    select.input-pill option { background-color: #141414; color: #ffffff; padding: 10px; }
-    textarea.input-pill { height: 90px; padding: 10px 14px; resize: none; }
-
-    .btn-maroon {
-      width: 100%; height: 44px;
-      background: linear-gradient(135deg, #70151c 0%, #3e0b10 100%);
-      border: 1px solid rgba(245, 232, 208, 0.2); border-radius: 14px; color: var(--accent-cream);
-      font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 5px;
-      box-shadow: 0 8px 20px rgba(92, 18, 24, 0.4); transition: all 0.25s ease;
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-maroon:hover { transform: translateY(-2px); filter: brightness(1.15); }
-
-    .btn-switch-role {
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff; font-size: 12px; padding: 6px 12px; border-radius: 10px;
-      cursor: pointer; margin-top: 8px; transition: all 0.2s ease; display: inline-block;
-    }
-
-    #main-layout { display: none; width: 100vw; height: 100dvh; position: relative; z-index: 2; }
-
-    .toggle-sidebar-btn {
-      position: absolute; top: 12px; left: 12px; z-index: 100;
-      background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff; width: 40px; height: 40px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer;
-    }
-
-    .sidebar-menu {
-      width: 260px; height: 100%;
-      background: var(--glass-bg); backdrop-filter: blur(35px);
-      border-right: 1px solid var(--glass-border);
-      display: flex; flex-direction: column; justify-content: space-between;
-      padding: 20px 14px; z-index: 10; transition: all 0.3s ease;
-    }
-    .sidebar-menu.hidden { margin-left: -260px; }
-
-    .nav-list { display: flex; flex-direction: column; gap: 6px; margin-top: 40px; }
-    .nav-item {
-      display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 14px;
-      color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s ease;
-    }
-    .nav-item:hover { background: rgba(255, 255, 255, 0.05); }
-    .nav-item.active {
-      background: linear-gradient(135deg, #70151c 0%, #3e0b10 100%);
-      border: 1px solid rgba(245, 232, 208, 0.25); color: var(--accent-cream); font-weight: 700;
-    }
-
-    .content-area { flex: 1; height: 100%; overflow-y: auto; padding: 60px 20px 20px 20px; display: flex; flex-direction: column; }
-    .view-section { display: none; width: 100%; height: 100%; flex-direction: column; }
-    .view-section.active-view { display: flex; }
-
-    .glass-card {
-      background: rgba(18, 18, 18, 0.65); backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 18px; margin-bottom: 12px;
-    }
-    .card-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-
-    /* KALENDARZ / GRAFIK */
-    .grafik-container { display: flex; gap: 15px; height: 100%; }
-    .grafik-main { flex: 1; display: flex; flex-direction: column; }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 10px; flex: 1; }
-    .day-box {
-      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px; padding: 8px; min-height: 70px; cursor: pointer; transition: 0.2s;
-      display: flex; flex-direction: column; justify-content: space-between;
-    }
-    .day-box:hover { border-color: var(--accent-maroon-bright); background: rgba(255,255,255,0.06); }
-    .day-box.selected { border-color: var(--accent-cream); background: rgba(138, 28, 36, 0.25); }
-    .day-box.has-shift { border-color: rgba(138, 28, 36, 0.8); background: rgba(92, 18, 24, 0.3); }
-
-    /* MODAL */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
-      z-index: 1000; justify-content: center; align-items: center; padding: 15px;
-    }
-    .modal-box {
-      width: 100%; max-width: 600px; background: #121212; border: 1px solid rgba(138, 28, 36, 0.5);
-      border-radius: 20px; padding: 22px; max-height: 90vh; overflow-y: auto;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- EKRAN LOGOWANIA -->
-  <div id="login-screen">
-    <div class="login-container">
-      <div class="brand-title">MPK DROBIN</div>
-      <div class="brand-sub">ZINTEGROWANY SYSTEM TRANSPORTOWY</div>
-
-      <div class="form-group">
-        <label>Użytkownik / Login</label>
-        <input type="text" id="l-user" class="input-pill" value="" placeholder="Wpisz swój login">
-      </div>
-
-      <div class="form-group">
-        <label>Hasło Dostępowe</label>
-        <input type="password" id="l-pass" class="input-pill" value="" placeholder="Wpisz hasło">
-      </div>
-
-      <button class="btn-maroon" id="btn-login-main">Zaloguj się do Systemu ➔</button>
-      <p id="login-err" style="color: #ff6b6b; font-size: 12px; margin-top: 8px; display: none;">Nieprawidłowy login lub hasło!</p>
-    </div>
-  </div>
-
-  <!-- APLIKACJA GŁÓWNA -->
-  <div id="main-layout" class="app-viewport">
-    <button class="toggle-sidebar-btn" id="btn-toggle-sidebar">☰</button>
-
-    <!-- SIDEBAR -->
-    <div class="sidebar-menu" id="sidebar">
-      <div>
-        <div id="sidebar-role-title" style="font-size: 16px; font-weight: 800; color: var(--accent-cream); text-align: center; margin-top: 5px;">
-          👨‍💻 DYSPOZYTORNIA
-        </div>
-
-        <div class="nav-list" id="sidebar-nav-container"></div>
-      </div>
-
-      <div style="padding: 8px; text-align: center; font-size: 11px; color: var(--text-dim); border-top: 1px solid rgba(255,255,255,0.1);">
-        Zalogowano jako: <strong id="logged-user-label" style="color: #fff;">-</strong>
-        <br>
-        <button id="btn-switch-role" class="btn-switch-role" style="display: none;">Przełącz rolę 🔄</button>
-        <br>
-        <span style="cursor: pointer; color: var(--accent-cream-dim); margin-top: 6px; display: inline-block;" id="btn-logout">Wyloguj</span>
-      </div>
-    </div>
-
-    <!-- CONTENT AREA -->
-    <div class="content-area">
-
-      <!-- DYSPOZYTOR: LINIE & BAZA PRZYSTANKÓW -->
-      <div id="view-disp-linie" class="view-section">
-        <div class="card-title-bar">
-          <h2>Lista Linii i Baza Przystanków</h2>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn-maroon" style="width: auto; padding: 0 14px;" id="btn-open-stops-db">🚏 Baza Przystanków & Głosy</button>
-          </div>
-        </div>
-        <div id="lista-linii-glowne" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;"></div>
-      </div>
-
-      <!-- DYSPOZYTOR: GRAFIK -->
-      <div id="view-disp-grafik" class="view-section">
-        <div class="card-title-bar">
-          <h2>Grafik Służb Kierowców</h2>
-        </div>
-        <div class="grafik-container">
-          <div class="grafik-main glass-card">
-            <div class="form-group" style="width: 220px; margin-bottom: 10px;">
-              <label>Wybierz Kierowcę:</label>
-              <select id="select-grafik-kierowca" class="input-pill"></select>
-            </div>
-            <div class="calendar-grid" id="disp-cal-grid"></div>
-          </div>
-
-          <div class="glass-card" style="width: 300px;">
-            <h3 style="color: var(--accent-cream); font-size: 15px; margin-bottom: 10px;">Przydziel Służbę</h3>
-            <div id="wybrany-dzien-label" style="font-size: 12px; font-weight: 700; margin-bottom: 10px;">Wybrany Dzień: Brak</div>
-
-            <div class="form-group">
-              <label>Wybierz Linię</label>
-              <select id="g-select-linia" class="input-pill"></select>
-            </div>
-
-            <div class="form-group">
-              <label>Liczba Kółek</label>
-              <input type="number" id="g-koolka" class="input-pill" value="5" min="1" max="15">
-            </div>
-
-            <div class="form-group">
-              <label>Przerwa Po Kółku</label>
-              <input type="number" id="g-przerwa-po-kolku" class="input-pill" value="2" min="1">
-            </div>
-
-            <div class="form-group">
-              <label>Czas Przerwy (min)</label>
-              <input type="number" id="g-przerwa-czas" class="input-pill" value="15" min="5" step="5">
-            </div>
-
-            <button class="btn-maroon" id="btn-save-schedule">Zapisz Służbę 💾</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- KIEROWCA: HOME -->
-      <div id="view-driver-home" class="view-section">
-        <div style="font-size: 24px; font-weight: 700; margin-bottom: 15px;">Witaj, <span id="driver-display-name" style="color: var(--accent-cream);">-</span></div>
-        <div class="glass-card">
-          <h3>Dzisiejsza Służba</h3>
-          <p style="margin-top: 6px; color: var(--accent-cream);" id="driver-today-info">Ładowanie danych...</p>
-        </div>
-      </div>
-
-      <!-- KIEROWCA: MIESIĘCZNY GRAFIK -->
-      <div id="view-driver-grafik" class="view-section">
-        <div class="glass-card" style="height: 100%; display: flex; flex-direction: column;">
-          <div class="card-title-bar">
-            <h2>Miesięczny Grafik Służb</h2>
-          </div>
-          <div class="calendar-grid" id="driver-cal-grid"></div>
-        </div>
-      </div>
-
-      <!-- KIEROWCA: KURS -->
-      <div id="view-driver-kurs" class="view-section">
-        <div class="glass-card" style="height: 100%;">
-          <h2>Prowadzenie Kursu</h2>
-          <p id="driver-course-status" style="margin-top: 10px;">Brak aktywnego kursu.</p>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- MODAL BAZY PRZYSTANKÓW I NAGRYWANIA GŁOSU -->
-  <div class="modal-overlay" id="modal-stops">
-    <div class="modal-box">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3>🚏 Baza Przystanków & Zapowiedzi Głosowe</h3>
-        <span id="btn-close-stops" style="cursor: pointer; font-size: 20px;">✕</span>
-      </div>
-
-      <div class="form-group">
-        <label>Nazwa Przystanku</label>
-        <input type="text" id="stop-name-input" class="input-pill" placeholder="np. Plac Wolności">
-      </div>
-
-      <div class="form-group">
-        <label>Zapowiedź Głosowa (Mówiona)</label>
-        <div style="display: flex; gap: 8px;">
-          <input type="text" id="stop-voice-input" class="input-pill" placeholder="np. Następny przystanek: Plac Wolności">
-          <button class="btn-maroon" style="width: auto; padding: 0 12px;" id="btn-record-voice">🎙️ Nagraj</button>
-        </div>
-      </div>
-
-      <button class="btn-maroon" id="btn-add-stop-db">+ Dodaj Przystanek do Bazy</button>
-
-      <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
-      <h4>Lista Przystanków w Bazie</h4>
-      <div id="stops-db-list" style="margin-top: 10px; max-height: 250px; overflow-y: auto;"></div>
-    </div>
-  </div>
-
-  <!-- FIREBASE SCRIPTS -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDlkKWLR06aHccoBBTBAnANFkLv7ewudiI",
-      authDomain: "drobinmpk.firebaseapp.com",
-      databaseURL: "https://drobinmpk-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "drobinmpk",
-      storageBucket: "drobinmpk.firebasestorage.app",
-      messagingSenderId: "921596374960",
-      appId: "1:921596374960:web:cb2d647540722114f5b075"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
-    let zalogowanaRola = null;
-    let zalogowanyUserObj = null;
-    let maDualRole = false;
-    let wybranyDzienGrafiku = null;
-
-    let przystankiBaza = [];
-    let linieBaza = [];
-    let kierowcyBaza = [];
-    let grafikBaza = {};
-
-    function initializeRealtimeListeners() {
-      onValue(ref(db, 'przystanki'), (snapshot) => {
-        przystankiBaza = snapshot.val() ? Object.values(snapshot.val()) : [];
-        renderStopsDB();
-      });
-
-      onValue(ref(db, 'linie'), (snapshot) => {
-        linieBaza = snapshot.val() ? Object.values(snapshot.val()) : [];
-        renderLinieDB();
-      });
-
-      onValue(ref(db, 'kierowcy'), (snapshot) => {
-        kierowcyBaza = snapshot.val() ? Object.values(snapshot.val()) : [];
-        populateSelects();
-      });
-
-      onValue(ref(db, 'grafik'), (snapshot) => {
-        grafikBaza = snapshot.val() || {};
-        renderDispCalendar();
-        renderDriverCalendar();
-      });
-    }
-
-    async function zalogujDoSystemu() {
-      const userVal = document.getElementById('l-user').value.trim();
-      const passVal = document.getElementById('l-pass').value.trim();
-      const errBox = document.getElementById('login-err');
-      errBox.style.display = 'none';
-
-      if (userVal.toLowerCase() === "bartosz") {
-        if (passVal === "bartosz11!@#") {
-          zalogowanaRola = "disp";
-          maDualRole = true;
-          zalogowanyUserObj = { name: "Bartosz Hulewicz", login: "hulewiczbartosz", id: 1786650829156, role: "both" };
-          initializeRealtimeListeners();
-          uruchomAplikacje();
+      document.getElementById('p-typ').onchange = (e) => {
+        const c = document.getElementById('container-wlasny-temat');
+        if (e.target.value === 'Własny temat') {
+          c.style.display = 'block';
         } else {
-          errBox.innerText = "Nieprawidłowe hasło dyspozytora!";
-          errBox.style.display = 'block';
+          c.style.display = 'none';
         }
-        return;
-      }
-
-      const emailDomain = userVal.includes('@') ? userVal : `${userVal.toLowerCase()}@mpkdrobin.pl`;
-      
-      try {
-        await signInWithEmailAndPassword(auth, emailDomain, passVal);
-        initializeRealtimeListeners();
-
-        setTimeout(() => {
-          const kFound = kierowcyBaza.find(k => 
-            k.login.toLowerCase() === userVal.toLowerCase() || 
-            k.name.toLowerCase() === userVal.toLowerCase()
-          );
-
-          if (kFound) {
-            zalogowanyUserObj = kFound;
-            maDualRole = (kFound.role === "both" || kFound.name.includes("Bartosz"));
-            zalogowanaRola = "driver";
-            uruchomAplikacje();
-          } else {
-            errBox.innerText = "Profil użytkownika nie został znaleziony w bazie!";
-            errBox.style.display = 'block';
-          }
-        }, 600);
-
-      } catch (error) {
-        errBox.innerText = "Błąd logowania: Błędne dane!";
-        errBox.style.display = 'block';
-      }
-    }
-
-    function uruchomAplikacje() {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('main-layout').style.display = 'flex';
-
-      const navBox = document.getElementById('sidebar-nav-container');
-      const roleTitle = document.getElementById('sidebar-role-title');
-      const userLbl = document.getElementById('logged-user-label');
-      const switchBtn = document.getElementById('btn-switch-role');
-
-      navBox.innerHTML = "";
-
-      if (maDualRole) {
-        switchBtn.style.display = 'inline-block';
-        switchBtn.innerText = zalogowanaRola === 'disp' ? 'Przełącz na Kierowcę 🔄' : 'Przełącz na Dyspozytora 🔄';
-      } else {
-        switchBtn.style.display = 'none';
-      }
-
-      if (zalogowanaRola === 'disp') {
-        roleTitle.innerText = "👨‍💻 DYSPOZYTORNIA";
-        userLbl.innerText = zalogowanyUserObj ? `${zalogowanyUserObj.name} (Dyspozytor)` : "Bartosz";
-        
-        navBox.innerHTML = `
-          <div id="nav-disp-linie" class="nav-item"><span>🚏</span> Linie & Przystanki</div>
-          <div id="nav-disp-grafik" class="nav-item"><span>📅</span> Zarządzanie Grafikiem</div>
-        `;
-
-        document.getElementById('nav-disp-linie').onclick = () => pokazWidok('disp-linie');
-        document.getElementById('nav-disp-grafik').onclick = () => pokazWidok('disp-grafik');
-        pokazWidok('disp-linie');
-      } else {
-        roleTitle.innerText = "🚌 PANEL KIEROWCY";
-        userLbl.innerText = zalogowanyUserObj ? zalogowanyUserObj.name : "Kierowca";
-
-        navBox.innerHTML = `
-          <div id="nav-driver-home" class="nav-item"><span>🧩</span> Strona Główna</div>
-          <div id="nav-driver-grafik" class="nav-item"><span>📅</span> Miesięczny Grafik</div>
-          <div id="nav-driver-kurs" class="nav-item"><span>🚌</span> Kurs</div>
-        `;
-
-        document.getElementById('nav-driver-home').onclick = () => pokazWidok('driver-home');
-        document.getElementById('nav-driver-grafik').onclick = () => pokazWidok('driver-grafik');
-        document.getElementById('nav-driver-kurs').onclick = () => pokazWidok('driver-kurs');
-
-        if(zalogowanyUserObj) document.getElementById('driver-display-name').innerText = zalogowanyUserObj.name;
-        pokazWidok('driver-home');
-      }
-    }
-
-    function pokazWidok(viewName) {
-      document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active-view'));
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
-      const vElem = document.getElementById(`view-${viewName}`);
-      const nElem = document.getElementById(`nav-${viewName}`);
-
-      if (vElem) vElem.classList.add('active-view');
-      if (nElem) nElem.classList.add('active');
-    }
-
-    // GENEROWANIE GRAFIKU DLA KIEROWCY (NAPRAWIONA FUNKCJA)
-    function renderDriverCalendar() {
-      const grid = document.getElementById('driver-cal-grid');
-      if (!grid || !zalogowanyUserObj) return;
-      grid.innerHTML = "";
-
-      const daysInMonth = 31;
-      for (let day = 1; day <= daysInMonth; day++) {
-        const key = `${zalogowanyUserObj.id}_${day}`;
-        const shift = grafikBaza[key];
-
-        const dayBox = document.createElement('div');
-        dayBox.className = `day-box ${shift ? 'has-shift' : ''}`;
-        dayBox.innerHTML = `
-          <div style="font-weight:800; font-size: 14px;">${day}</div>
-          <div style="font-size:10px; color: var(--accent-cream);">${shift ? shift.linia : 'Wolne'}</div>
-        `;
-        grid.appendChild(dayBox);
-      }
-    }
-
-    // GENEROWANIE GRAFIKU DLA DYSPOZYTORA
-    function renderDispCalendar() {
-      const grid = document.getElementById('disp-cal-grid');
-      const selectedDriverId = document.getElementById('select-grafik-kierowca').value;
-      if (!grid) return;
-      grid.innerHTML = "";
-
-      const daysInMonth = 31;
-      for (let day = 1; day <= daysInMonth; day++) {
-        const key = `${selectedDriverId}_${day}`;
-        const shift = grafikBaza[key];
-
-        const dayBox = document.createElement('div');
-        dayBox.className = `day-box ${shift ? 'has-shift' : ''} ${wybranyDzienGrafiku === day ? 'selected' : ''}`;
-        dayBox.innerHTML = `
-          <div style="font-weight:800; font-size: 14px;">${day}</div>
-          <div style="font-size:10px; color: var(--accent-cream);">${shift ? shift.linia : 'Brak'}</div>
-        `;
-        dayBox.onclick = () => {
-          wybranyDzienGrafiku = day;
-          document.getElementById('wybrany-dzien-label').innerText = `Wybrany Dzień: ${day}`;
-          renderDispCalendar();
-        };
-        grid.appendChild(dayBox);
-      }
-    }
-
-    function populateSelects() {
-      const kSelect = document.getElementById('select-grafik-kierowca');
-      if (kSelect) {
-        kSelect.innerHTML = kierowcyBaza.map(k => `<option value="${k.id}">${k.name}</option>`).join('');
-        kSelect.onchange = renderDispCalendar;
-      }
-    }
-
-    function renderLinieDB() {
-      const container = document.getElementById('lista-linii-glowne');
-      const gLiniaSelect = document.getElementById('g-select-linia');
-      if (!container) return;
-
-      container.innerHTML = linieBaza.map(l => `
-        <div class="glass-card">
-          <h3 style="color: var(--accent-cream);">${l.numer}</h3>
-          <p style="font-size: 12px; color: #ccc; margin-top: 4px;">Trasa: ${l.kierunek || 'Standardowa'}</p>
-          <div style="margin-top: 10px; font-size: 11px; color: var(--text-dim);">Przystanków: ${l.przystanki ? l.przystanki.length : 0}</div>
-        </div>
-      `).join('');
-
-      if (gLiniaSelect) {
-        gLiniaSelect.innerHTML = linieBaza.map(l => `<option value="${l.numer}">${l.numer}</option>`).join('');
-      }
-    }
-
-    function renderStopsDB() {
-      const list = document.getElementById('stops-db-list');
-      if (!list) return;
-      list.innerHTML = przystankiBaza.map(s => `
-        <div style="background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-weight: 700; font-size: 13px;">${s.nazwa}</div>
-            <div style="font-size: 11px; color: var(--accent-cream-dim);">Mówiona: ${s.mowiona || s.nazwa}</div>
-          </div>
-          <button style="background:none; border:none; color: var(--accent-cream); cursor:pointer;" onclick="alert('Odtwarzanie zapowiedzi...')">🔊</button>
-        </div>
-      `).join('');
-    }
-
-    // MODAL HANDLERS
-    document.getElementById('btn-open-stops-db').onclick = () => document.getElementById('modal-stops').style.display = 'flex';
-    document.getElementById('btn-close-stops').onclick = () => document.getElementById('modal-stops').style.display = 'none';
-
-    document.getElementById('btn-add-stop-db').onclick = async () => {
-      const name = document.getElementById('stop-name-input').value.trim();
-      const voice = document.getElementById('stop-voice-input').value.trim();
-      if (!name) return alert('Wpisz nazwę przystanku!');
-
-      const id = Date.now();
-      await set(ref(db, `przystanki/${id}`), { id, nazwa: name, mowiona: voice || name });
-      document.getElementById('stop-name-input').value = '';
-      document.getElementById('stop-voice-input').value = '';
-    };
-
-    document.getElementById('btn-save-schedule').onclick = async () => {
-      const driverId = document.getElementById('select-grafik-kierowca').value;
-      const linia = document.getElementById('g-select-linia').value;
-      const kolka = document.getElementById('g-koolka').value;
-      const przerwaPo = document.getElementById('g-przerwa-po-kolku').value;
-      const przerwaCzas = document.getElementById('g-przerwa-czas').value;
-
-      if (!wybranyDzienGrafiku) return alert('Wybierz dzień z kalendarza!');
-
-      const key = `${driverId}_${wybranyDzienGrafiku}`;
-      await set(ref(db, `grafik/${key}`), {
-        linia, koleka: parseInt(kolka), przerwaPo: parseInt(przerwaPo), przerwaCzas: parseInt(przerwaCzas)
-      });
-      alert('Służba została pomyślnie zapisana!');
-    };
-
-    document.getElementById('btn-switch-role').onclick = () => {
-      zalogowanaRola = (zalogowanaRola === 'disp') ? 'driver' : 'disp';
-      uruchomAplikacje();
-    };
-
-    document.getElementById('btn-login-main').onclick = zalogujDoSystemu;
-    document.getElementById('btn-logout').onclick = () => location.reload();
-    document.getElementById('btn-toggle-sidebar').onclick = () => document.getElementById('sidebar').classList.toggle('hidden');
+      };
+    });
   </script>
 </body>
 </html>
