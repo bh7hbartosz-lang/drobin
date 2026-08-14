@@ -20,7 +20,6 @@
       --glass-border: rgba(255, 255, 255, 0.08);
       --text-white: #ffffff;
       --text-dim: #999999;
-      --penalty-red: #ff3333;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
@@ -35,17 +34,10 @@
 
     .app-viewport { display: flex; width: 100vw; height: 100dvh; position: relative; overflow: hidden; }
 
-    .bg-glow-top-right {
-      position: absolute; width: 700px; height: 700px;
-      background: radial-gradient(circle, var(--accent-maroon-glow) 0%, rgba(0,0,0,0) 70%);
-      top: -20%; right: -10%; filter: blur(90px); pointer-events: none; z-index: 1;
-    }
-
     /* EKRAN LOGOWANIA */
     #login-screen {
       position: fixed; inset: 0; background: #000; z-index: 2000;
       display: flex; justify-content: center; align-items: center; padding: 20px;
-      overflow-y: auto;
     }
 
     .login-container {
@@ -71,7 +63,7 @@
 
     select.input-pill { background-color: #1a1a1a; color: #ffffff; }
     select.input-pill option { background-color: #141414; color: #ffffff; padding: 10px; }
-    textarea.input-pill { height: 100px; padding: 10px 14px; resize: none; }
+    textarea.input-pill { height: 90px; padding: 10px 14px; resize: none; }
 
     .btn-maroon {
       width: 100%; height: 44px;
@@ -82,67 +74,14 @@
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     }
     .btn-maroon:hover { transform: translateY(-2px); filter: brightness(1.15); }
-    .btn-maroon:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    /* BUTTON SWITCH ROLE */
     .btn-switch-role {
       background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
       border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
-      font-size: 12px;
-      padding: 6px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: all 0.2s ease;
-      display: inline-block;
-    }
-    .btn-switch-role:hover { filter: brightness(1.2); }
-
-    /* STYLIZACJA PRZYCISKÓW KIEROWCY */
-    .btn-drive-start { 
-      background: linear-gradient(135deg, #70151c 0%, #450c11 100%) !important; 
-      color: var(--accent-cream) !important;
-      border: 1px solid rgba(245, 232, 208, 0.25) !important;
-      box-shadow: 0 6px 16px rgba(112, 21, 28, 0.35) !important; 
-    }
-    .btn-drive-next { 
-      background: linear-gradient(135deg, #2b3a4a 0%, #1a232e 100%) !important; 
-      color: #e3edf7 !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
-      box-shadow: 0 6px 16px rgba(43, 58, 74, 0.3) !important; 
-    }
-    .btn-drive-stop { 
-      background: linear-gradient(135deg, #3d080e 0%, #1c0205 100%) !important; 
-      color: #f7a8a8 !important;
-      border: 1px solid rgba(255, 77, 77, 0.3) !important;
-      box-shadow: 0 6px 16px rgba(61, 8, 14, 0.6) !important; 
-    }
-    .btn-drive-stand { 
-      background: linear-gradient(135deg, #38421d 0%, #1f2610 100%) !important; 
-      color: #d8e6be !important;
-      border: 1px solid rgba(130, 160, 80, 0.3) !important;
-      box-shadow: 0 6px 16px rgba(31, 38, 16, 0.5) !important;
+      color: #fff; font-size: 12px; padding: 6px 12px; border-radius: 10px;
+      cursor: pointer; margin-top: 8px; transition: all 0.2s ease; display: inline-block;
     }
 
-    .penalty-card {
-      background: rgba(180, 20, 20, 0.15) !important;
-      border: 1px solid rgba(255, 51, 51, 0.4) !important;
-      box-shadow: 0 8px 25px rgba(255, 51, 51, 0.15);
-    }
-    .penalty-badge {
-      background: rgba(255, 51, 51, 0.25);
-      color: #ff6666;
-      border: 1px solid rgba(255, 51, 51, 0.5);
-      padding: 3px 10px;
-      border-radius: 8px;
-      font-size: 11px;
-      font-weight: 800;
-      display: inline-block;
-      margin-left: 6px;
-    }
-
-    /* LAYOUT APLIKACJI */
     #main-layout { display: none; width: 100vw; height: 100dvh; position: relative; z-index: 2; }
 
     .toggle-sidebar-btn {
@@ -150,18 +89,14 @@
       background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);
       color: #fff; width: 40px; height: 40px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer;
-      transition: background 0.2s;
     }
-    .toggle-sidebar-btn:hover { background: rgba(255, 255, 255, 0.25); }
 
-    /* SIDEBAR */
     .sidebar-menu {
       width: 260px; height: 100%;
       background: var(--glass-bg); backdrop-filter: blur(35px);
       border-right: 1px solid var(--glass-border);
       display: flex; flex-direction: column; justify-content: space-between;
       padding: 20px 14px; z-index: 10; transition: all 0.3s ease;
-      position: relative;
     }
     .sidebar-menu.hidden { margin-left: -260px; }
 
@@ -174,79 +109,40 @@
     .nav-item.active {
       background: linear-gradient(135deg, #70151c 0%, #3e0b10 100%);
       border: 1px solid rgba(245, 232, 208, 0.25); color: var(--accent-cream); font-weight: 700;
-      box-shadow: 0 6px 18px rgba(92, 18, 24, 0.4);
     }
 
-    /* CONTENT AREA */
-    .content-area {
-      flex: 1; height: 100%; overflow-y: auto; padding: 60px 20px 20px 20px;
-      display: flex; flex-direction: column; position: relative;
-    }
-
+    .content-area { flex: 1; height: 100%; overflow-y: auto; padding: 60px 20px 20px 20px; display: flex; flex-direction: column; }
     .view-section { display: none; width: 100%; height: 100%; flex-direction: column; }
     .view-section.active-view { display: flex; }
 
     .glass-card {
       background: rgba(18, 18, 18, 0.65); backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 18px;
-      margin-bottom: 12px; transition: all 0.5s ease;
+      border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 18px; margin-bottom: 12px;
     }
-
     .card-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 
-    .list-item {
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px; padding: 10px 14px; margin-bottom: 6px;
-      display: flex; justify-content: space-between; align-items: center;
+    /* KALENDARZ / GRAFIK */
+    .grafik-container { display: flex; gap: 15px; height: 100%; }
+    .grafik-main { flex: 1; display: flex; flex-direction: column; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 10px; flex: 1; }
+    .day-box {
+      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px; padding: 8px; min-height: 70px; cursor: pointer; transition: 0.2s;
+      display: flex; flex-direction: column; justify-content: space-between;
     }
+    .day-box:hover { border-color: var(--accent-maroon-bright); background: rgba(255,255,255,0.06); }
+    .day-box.selected { border-color: var(--accent-cream); background: rgba(138, 28, 36, 0.25); }
+    .day-box.has-shift { border-color: rgba(138, 28, 36, 0.8); background: rgba(92, 18, 24, 0.3); }
 
+    /* MODAL */
     .modal-overlay {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
       z-index: 1000; justify-content: center; align-items: center; padding: 15px;
     }
     .modal-box {
-      width: 100%; max-width: 650px; background: #121212; border: 1px solid rgba(138, 28, 36, 0.5);
+      width: 100%; max-width: 600px; background: #121212; border: 1px solid rgba(138, 28, 36, 0.5);
       border-radius: 20px; padding: 22px; max-height: 90vh; overflow-y: auto;
     }
-
-    .grafik-container { display: flex; gap: 15px; height: 100%; }
-    .grafik-main { flex: 1; display: flex; flex-direction: column; }
-    .grafik-sidebar {
-      width: 300px; background: rgba(12, 12, 12, 0.85); border: 1px solid var(--glass-border);
-      border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px;
-    }
-
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; }
-    .day-box {
-      background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px; padding: 6px; min-height: 55px; cursor: pointer; transition: 0.2s;
-      display: flex; flex-direction: column; justify-content: space-between;
-    }
-    .day-box:hover { border-color: var(--accent-maroon-bright); }
-    .day-box.selected { border-color: var(--accent-cream); background: rgba(138, 28, 36, 0.25); }
-    .day-box.has-shift, .day-box.work { border-color: rgba(138, 28, 36, 0.6); background: rgba(92, 18, 24, 0.2); }
-
-    .kurs-layout-grid { display: flex; flex-direction: column; flex: 1; gap: 10px; min-height: 0; }
-    .stops-scroll { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 10px; overflow-y: auto; min-height: 0; }
-
-    .live-card {
-      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 14px; padding: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;
-    }
-    .live-card-header { display: flex; justify-content: space-between; align-items: center; }
-    .status-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 16px; text-transform: uppercase; }
-    .status-badge.in-progress { background: rgba(138, 28, 36, 0.25); color: var(--accent-cream); border: 1px solid var(--accent-maroon-bright); }
-    .status-badge.break { background: rgba(197, 184, 160, 0.15); color: var(--accent-cream); border: 1px solid var(--accent-cream-dim); }
-    .status-badge.stand { background: rgba(56, 66, 29, 0.4); color: #d8e6be; border: 1px solid rgba(130, 160, 80, 0.5); }
-    .status-badge.idle { background: rgba(255, 255, 255, 0.08); color: #ccc; border: 1px solid rgba(255, 255, 255, 0.2); }
-
-    .live-progress-bar { width: 100%; height: 5px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden; }
-    .live-progress-fill { height: 100%; background: linear-gradient(90deg, #70151c, #f5e8d0); width: 0%; transition: width 0.4s ease; }
-
-    /* REGULACJE MOBILNE */
-    body.is-mobile .sidebar-menu { position: absolute; left: 0; top: 0; bottom: 0; width: 240px; z-index: 1000; box-shadow: 10px 0 30px rgba(0,0,0,0.8); }
-    body.is-mobile .sidebar-menu.hidden { margin-left: -250px; }
-    body.is-mobile .content-area { padding: 55px 10px 10px 10px !important; }
   </style>
 </head>
 <body>
@@ -259,20 +155,12 @@
 
       <div class="form-group">
         <label>Użytkownik / Login</label>
-        <input type="text" id="l-user" class="input-pill" value="hulewiczbartosz" placeholder="Bartosz lub hulewiczbartosz">
+        <input type="text" id="l-user" class="input-pill" value="" placeholder="Wpisz swój login">
       </div>
 
       <div class="form-group">
         <label>Hasło Dostępowe</label>
-        <input type="password" id="l-pass" class="input-pill" value="bartosz2011!" placeholder="Wpisz hasło">
-      </div>
-
-      <div class="form-group">
-        <label>Wybierz Urządzenie</label>
-        <select id="l-device" class="input-pill">
-          <option value="desktop">🖥️ Komputer / Tablet (Duży ekran)</option>
-          <option value="mobile" selected>📱 Telefon (iOS / Android)</option>
-        </select>
+        <input type="password" id="l-pass" class="input-pill" value="" placeholder="Wpisz hasło">
       </div>
 
       <button class="btn-maroon" id="btn-login-main">Zaloguj się do Systemu ➔</button>
@@ -282,8 +170,6 @@
 
   <!-- APLIKACJA GŁÓWNA -->
   <div id="main-layout" class="app-viewport">
-    <div class="bg-glow-top-right"></div>
-
     <button class="toggle-sidebar-btn" id="btn-toggle-sidebar">☰</button>
 
     <!-- SIDEBAR -->
@@ -299,7 +185,7 @@
       <div style="padding: 8px; text-align: center; font-size: 11px; color: var(--text-dim); border-top: 1px solid rgba(255,255,255,0.1);">
         Zalogowano jako: <strong id="logged-user-label" style="color: #fff;">-</strong>
         <br>
-        <button id="btn-switch-role" class="btn-switch-role" style="display: none;">Przełącz na Kierowcę 🔄</button>
+        <button id="btn-switch-role" class="btn-switch-role" style="display: none;">Przełącz rolę 🔄</button>
         <br>
         <span style="cursor: pointer; color: var(--accent-cream-dim); margin-top: 6px; display: inline-block;" id="btn-logout">Wyloguj</span>
       </div>
@@ -308,102 +194,34 @@
     <!-- CONTENT AREA -->
     <div class="content-area">
 
-      <!-- ==================== WIDOKI DYSPOZYTORA ==================== -->
+      <!-- DYSPOZYTOR: LINIE & BAZA PRZYSTANKÓW -->
       <div id="view-disp-linie" class="view-section">
         <div class="card-title-bar">
-          <h2>Lista Aktywnych Linii i Przystanków</h2>
+          <h2>Lista Linii i Baza Przystanków</h2>
           <div style="display: flex; gap: 8px;">
-            <button class="btn-maroon" style="width: auto; padding: 0 14px;" id="btn-create-line">+ Stwórz Nową Linię</button>
-            <button class="btn-maroon" style="width: auto; padding: 0 14px; background: #222;" id="btn-open-stops-db">🚏 Baza Przystanków</button>
+            <button class="btn-maroon" style="width: auto; padding: 0 14px;" id="btn-open-stops-db">🚏 Baza Przystanków & Głosy</button>
           </div>
         </div>
         <div id="lista-linii-glowne" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;"></div>
       </div>
 
-      <div id="view-disp-kierowcy" class="view-section">
-        <div class="card-title-bar">
-          <h2>Baza, Profile i Zdalny Podgląd Kierowców</h2>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
-          <div class="glass-card">
-            <h3 style="margin-bottom: 12px;">Dodaj Nowego Kierowcę</h3>
-            <div class="form-group">
-              <label>Imię i Nazwisko Kierowcy</label>
-              <input type="text" id="k-name" class="input-pill" placeholder="np. Jan Kowalski">
-            </div>
-            <div class="form-group">
-              <label>ID / Login Kierowcy</label>
-              <input type="text" id="k-login" class="input-pill" placeholder="np. jankowalski">
-            </div>
-            <div class="form-group">
-              <label>Hasło Konta Kierowcy</label>
-              <input type="text" id="k-pass" class="input-pill" value="kierowca123" placeholder="Ustal hasło">
-            </div>
-            <button class="btn-maroon" id="btn-add-driver">+ Stwórz Profil Kierowcy</button>
-          </div>
-
-          <div class="glass-card">
-            <h3 style="margin-bottom: 12px;">Podgląd Live Kierowców</h3>
-            <div id="lista-kierowcow"></div>
-          </div>
-        </div>
-      </div>
-
-      <div id="view-disp-kary" class="view-section">
-        <div class="card-title-bar">
-          <h2>Ewidencja Kar i Przerw Służbowych</h2>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
-          <div class="glass-card penalty-card">
-            <h3 style="margin-bottom: 12px; color: #ff6666;">🚨 Kary za Kursy (Czerwone Doliczenie Karne)</h3>
-            <div class="form-group">
-              <label>Wybierz Kierowcę</label>
-              <select id="disp-action-kierowca-kursy" class="input-pill"></select>
-            </div>
-            <div class="form-group">
-              <label>Dodatkowe Kółka (Doliczenie Karne):</label>
-              <div style="display: flex; gap: 8px;">
-                <input type="number" id="disp-extra-loops" class="input-pill" value="2" min="1" style="flex:1;">
-                <button class="btn-maroon" style="width: auto; padding: 0 12px; background: linear-gradient(135deg, #cc0000 0%, #660000 100%); border-color: rgba(255,100,100,0.5);" id="btn-apply-penalty">Nałóż Karę ⚠️</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-card">
-            <h3 style="margin-bottom: 12px; color: var(--accent-cream-dim);">☕ Kary i Przerwy Czasowe</h3>
-            <div class="form-group">
-              <label>Wybierz Kierowcę</label>
-              <select id="disp-action-kierowca-przerwy" class="input-pill"></select>
-            </div>
-            <div class="form-group">
-              <label>Ustaw Natychmiastową Przerwę Dyspozytorską:</label>
-              <div style="display: flex; gap: 8px;">
-                <button class="btn-maroon" style="flex:1; background: #222;" id="btn-break-5">➕ Przerwa 5 min</button>
-                <button class="btn-maroon" style="flex:1; background: #222;" id="btn-break-10">➕ Przerwa 10 min</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <!-- DYSPOZYTOR: GRAFIK -->
       <div id="view-disp-grafik" class="view-section">
         <div class="card-title-bar">
-          <h2>Grafik Służb Kierowców z Planowaniem Przerw</h2>
+          <h2>Grafik Służb Kierowców</h2>
         </div>
         <div class="grafik-container">
           <div class="grafik-main glass-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <div class="form-group" style="margin: 0; width: 220px;">
-                <label>Wybierz Kierowcę:</label>
-                <select id="select-grafik-kierowca" class="input-pill"></select>
-              </div>
+            <div class="form-group" style="width: 220px; margin-bottom: 10px;">
+              <label>Wybierz Kierowcę:</label>
+              <select id="select-grafik-kierowca" class="input-pill"></select>
             </div>
             <div class="calendar-grid" id="disp-cal-grid"></div>
           </div>
 
-          <div class="grafik-sidebar">
-            <h3 style="color: var(--accent-cream); font-size: 15px;">Przydziel Służbę i Przerwę</h3>
-            <div id="wybrany-dzien-label" style="font-size: 12px; font-weight: 700; color: #fff;">Wybrany Dzień: Brak</div>
+          <div class="glass-card" style="width: 300px;">
+            <h3 style="color: var(--accent-cream); font-size: 15px; margin-bottom: 10px;">Przydziel Służbę</h3>
+            <div id="wybrany-dzien-label" style="font-size: 12px; font-weight: 700; margin-bottom: 10px;">Wybrany Dzień: Brak</div>
 
             <div class="form-group">
               <label>Wybierz Linię</label>
@@ -411,151 +229,89 @@
             </div>
 
             <div class="form-group">
-              <label>Liczba Kółek Do Zrobienia</label>
+              <label>Liczba Kółek</label>
               <input type="number" id="g-koolka" class="input-pill" value="5" min="1" max="15">
             </div>
 
-            <div class="form-group" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-              <label>Przerwa Po Którym Kółku?</label>
-              <input type="number" id="g-przerwa-po-kolku" class="input-pill" value="2" min="1" max="15">
+            <div class="form-group">
+              <label>Przerwa Po Kółku</label>
+              <input type="number" id="g-przerwa-po-kolku" class="input-pill" value="2" min="1">
             </div>
 
             <div class="form-group">
-              <label>Czas Przerwy (Minuty)</label>
-              <input type="number" id="g-przerwa-czas" class="input-pill" value="15" min="5" max="60" step="5">
+              <label>Czas Przerwy (min)</label>
+              <input type="number" id="g-przerwa-czas" class="input-pill" value="15" min="5" step="5">
             </div>
 
-            <button class="btn-maroon" id="btn-save-schedule">Zapisz i Wyślij Powiadomienie 🔔</button>
+            <button class="btn-maroon" id="btn-save-schedule">Zapisz Służbę 💾</button>
           </div>
         </div>
       </div>
 
-      <div id="view-disp-wiadomosci" class="view-section">
-        <div class="card-title-bar">
-          <h2>Centrum Komunikacji z Kierowcami</h2>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; flex: 1;">
-          <div class="glass-card" style="display: flex; flex-direction: column;">
-            <h3>Wyślij Wiadomość Do Kierowcy</h3>
-            <div class="form-group" style="margin-top: 10px;">
-              <label>Odbiorca Wiadomości</label>
-              <select id="msg-kierowca" class="input-pill"></select>
-            </div>
-            <div class="form-group">
-              <label>Nagłówek Komunikatu</label>
-              <input type="text" id="msg-tytul" class="input-pill" value="Komunikat Dyspozytora">
-            </div>
-            <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
-              <label>Treść Wiadomości</label>
-              <textarea id="msg-tresc" class="input-pill" style="flex: 1;" placeholder="Wpisz treść..."></textarea>
-            </div>
-            <button class="btn-maroon" id="btn-send-dispatcher-msg">Wyślij Powiadomienie 📩</button>
-          </div>
-
-          <div class="glass-card" style="display: flex; flex-direction: column;">
-            <h3>Otrzymane Zgłoszenia i Prośby</h3>
-            <div id="disp-prosoby-lista" style="flex: 1; overflow-y: auto; margin-top: 10px;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== WIDOKI KIEROWCY ==================== -->
+      <!-- KIEROWCA: HOME -->
       <div id="view-driver-home" class="view-section">
-        <div style="font-size: 24px; font-weight: 700; margin-bottom: 2px;">Witaj, <span id="driver-display-name" style="color: var(--accent-cream);">-</span></div>
-        <div style="font-size: 12px; color: var(--accent-cream-dim); margin-bottom: 15px;" id="driver-datetime">Dzisiaj jest: -</div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 15px;">
-          <div class="glass-card">
-            <div style="font-size: 11px; color: var(--text-dim);">DZISIEJSZA LINIA</div>
-            <div style="font-size: 22px; font-weight: 800; color: var(--accent-cream); margin-top: 2px;" id="driver-today-line">Linia 161</div>
-            <p style="color: var(--text-dim); margin-top: 4px; font-size: 11px;" id="driver-today-dir">Trasa: Północ ➔ Południe</p>
-          </div>
-
-          <div class="glass-card">
-            <div style="font-size: 11px; color: var(--text-dim);">DO ZROBIENIA DZISIAJ</div>
-            <div style="font-size: 22px; font-weight: 800; color: #fff; margin-top: 2px;" id="driver-today-loops-goal">5 kółek</div>
-            <p style="color: var(--text-dim); margin-top: 4px; font-size: 11px;">Ukończono: <span id="driver-completed-loops-val">0</span> <span id="driver-penalty-tag"></span></p>
-          </div>
-
-          <div class="glass-card">
-            <div style="font-size: 11px; color: var(--text-dim);">STATUS SŁUŻBY</div>
-            <div style="font-size: 22px; font-weight: 800; color: var(--accent-cream); margin-top: 2px;" id="driver-status-text">Gotowy</div>
-            <button class="btn-maroon btn-drive-start" style="margin-top: 8px;" id="btn-home-start-course">Rozpocznij Kurs (WYJ) ➔</button>
-          </div>
-        </div>
-
+        <div style="font-size: 24px; font-weight: 700; margin-bottom: 15px;">Witaj, <span id="driver-display-name" style="color: var(--accent-cream);">-</span></div>
         <div class="glass-card">
-          <h3>Ostatnie Powiadomienia</h3>
-          <div id="driver-home-notif-list" style="margin-top: 8px;"></div>
+          <h3>Dzisiejsza Służba</h3>
+          <p style="margin-top: 6px; color: var(--accent-cream);" id="driver-today-info">Ładowanie danych...</p>
         </div>
       </div>
 
+      <!-- KIEROWCA: MIESIĘCZNY GRAFIK -->
       <div id="view-driver-grafik" class="view-section">
         <div class="glass-card" style="height: 100%; display: flex; flex-direction: column;">
           <div class="card-title-bar">
             <h2>Miesięczny Grafik Służb</h2>
-            <button class="btn-maroon btn-drive-start" style="width: auto; padding: 0 16px;" id="btn-grafik-start-course">▶ Rozpocznij Kurs (WYJ)</button>
           </div>
-          <div class="calendar-grid" id="driver-cal-grid" style="flex: 1;"></div>
+          <div class="calendar-grid" id="driver-cal-grid"></div>
         </div>
       </div>
 
+      <!-- KIEROWCA: KURS -->
       <div id="view-driver-kurs" class="view-section">
-        <div class="glass-card" id="kurs-main-card" style="height: 100%; display: flex; flex-direction: column; position: relative;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;">
-            <div>
-              <span style="color: var(--accent-cream-dim); font-size: 11px; font-weight: 700;">
-                AKTYWNA LINIA: <span id="active-line-name">WYJ</span> (KÓŁKO <span id="current-loop-num">1</span>/<span id="max-loops-num">5</span>) 
-                <span id="active-penalty-tag"></span>
-              </span>
-              <h2 style="font-size: 18px; color: #fff;" id="active-route-title">WYJAZD NA LINIĘ</h2>
-            </div>
-            <div style="text-align: right;">
-              <span style="color: var(--text-dim); font-size: 11px; font-weight: 700;" id="timer-label">WYJAZD NA LINIĘ</span>
-              <div style="font-size: 26px; font-weight: 800; color: var(--accent-cream); font-family: monospace; line-height:1;" id="timer">--:--</div>
-            </div>
-          </div>
-
-          <div class="kurs-layout-grid">
-            <div class="stops-scroll" id="stops-list"></div>
-          </div>
-        </div>
-      </div>
-
-      <div id="view-driver-prosby" class="view-section">
-        <div class="glass-card" style="height: 100%; display: flex; flex-direction: column;">
-          <h2>Zgłoszenie / Prośba do Dyspozytora</h2>
-          <div class="form-group" style="margin-top: 10px;">
-            <label>Typ Zgłoszenia</label>
-            <select id="p-typ" class="input-pill">
-              <option value="Prośba o dzień wolny">Prośba o dzień wolny</option>
-              <option value="Prośba o zamianę służby">Prośba o zamianę służby</option>
-              <option value="Zgłoszenie awarii pojazdu">Zgłoszenie awarii pojazdu</option>
-            </select>
-          </div>
-          <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
-            <label>Opis Szczegółowy</label>
-            <textarea id="p-powod" class="input-pill" style="flex: 1;" placeholder="Wpisz szczegóły prośby..."></textarea>
-          </div>
-          <button class="btn-maroon" id="btn-send-driver-request">Wyślij Zgłoszenie ➔</button>
-        </div>
-      </div>
-
-      <div id="view-driver-powiadomienia" class="view-section">
-        <div class="glass-card" style="height: 100%; display: flex; flex-direction: column;">
-          <h2>Centrum Powiadomień od Dyspozytora</h2>
-          <div id="driver-full-notif-list" style="flex: 1; overflow-y: auto; margin-top: 10px;"></div>
+        <div class="glass-card" style="height: 100%;">
+          <h2>Prowadzenie Kursu</h2>
+          <p id="driver-course-status" style="margin-top: 10px;">Brak aktywnego kursu.</p>
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- FIREBASE INTEGRACJA MODULE JS -->
+  <!-- MODAL BAZY PRZYSTANKÓW I NAGRYWANIA GŁOSU -->
+  <div class="modal-overlay" id="modal-stops">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3>🚏 Baza Przystanków & Zapowiedzi Głosowe</h3>
+        <span id="btn-close-stops" style="cursor: pointer; font-size: 20px;">✕</span>
+      </div>
+
+      <div class="form-group">
+        <label>Nazwa Przystanku</label>
+        <input type="text" id="stop-name-input" class="input-pill" placeholder="np. Plac Wolności">
+      </div>
+
+      <div class="form-group">
+        <label>Zapowiedź Głosowa (Mówiona)</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="stop-voice-input" class="input-pill" placeholder="np. Następny przystanek: Plac Wolności">
+          <button class="btn-maroon" style="width: auto; padding: 0 12px;" id="btn-record-voice">🎙️ Nagraj</button>
+        </div>
+      </div>
+
+      <button class="btn-maroon" id="btn-add-stop-db">+ Dodaj Przystanek do Bazy</button>
+
+      <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
+      <h4>Lista Przystanków w Bazie</h4>
+      <div id="stops-db-list" style="margin-top: 10px; max-height: 250px; overflow-y: auto;"></div>
+    </div>
+  </div>
+
+  <!-- FIREBASE SCRIPTS -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, set, get, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDlkKWLR06aHccoBBTBAnANFkLv7ewudiI",
@@ -571,39 +327,36 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let zalogowanaRola = null; 
+    let zalogowanaRola = null;
     let zalogowanyUserObj = null;
-    let maDualRole = false; 
+    let maDualRole = false;
+    let wybranyDzienGrafiku = null;
 
     let przystankiBaza = [];
     let linieBaza = [];
     let kierowcyBaza = [];
-    let grafikBaza = {}; 
-    let powiadomieniaBaza = {}; 
+    let grafikBaza = {};
 
     function initializeRealtimeListeners() {
       onValue(ref(db, 'przystanki'), (snapshot) => {
         przystankiBaza = snapshot.val() ? Object.values(snapshot.val()) : [];
+        renderStopsDB();
       });
 
       onValue(ref(db, 'linie'), (snapshot) => {
         linieBaza = snapshot.val() ? Object.values(snapshot.val()) : [];
+        renderLinieDB();
       });
 
       onValue(ref(db, 'kierowcy'), (snapshot) => {
         kierowcyBaza = snapshot.val() ? Object.values(snapshot.val()) : [];
-        if (zalogowanyUserObj) {
-          const fresh = kierowcyBaza.find(k => k.id === zalogowanyUserObj.id || k.login === zalogowanyUserObj.login);
-          if (fresh) zalogowanyUserObj = fresh;
-        }
+        populateSelects();
       });
 
       onValue(ref(db, 'grafik'), (snapshot) => {
         grafikBaza = snapshot.val() || {};
-      });
-
-      onValue(ref(db, 'powiadomienia'), (snapshot) => {
-        powiadomieniaBaza = snapshot.val() || {};
+        renderDispCalendar();
+        renderDriverCalendar();
       });
     }
 
@@ -613,7 +366,6 @@
       const errBox = document.getElementById('login-err');
       errBox.style.display = 'none';
 
-      // 1. Dedykowane logowanie Dyspozytor (Bartosz)
       if (userVal.toLowerCase() === "bartosz") {
         if (passVal === "bartosz11!@#") {
           zalogowanaRola = "disp";
@@ -628,7 +380,6 @@
         return;
       }
 
-      // 2. Logowanie kont kierowców (w tym hulewiczbartosz z rolą 'both')
       const emailDomain = userVal.includes('@') ? userVal : `${userVal.toLowerCase()}@mpkdrobin.pl`;
       
       try {
@@ -643,13 +394,8 @@
 
           if (kFound) {
             zalogowanyUserObj = kFound;
-            if (kFound.role === "both" || kFound.name.includes("Bartosz")) {
-              maDualRole = true;
-              zalogowanaRola = "driver"; // Domyślnie wchodzi jako kierowca z opcją przełączenia
-            } else {
-              maDualRole = false;
-              zalogowanaRola = "driver";
-            }
+            maDualRole = (kFound.role === "both" || kFound.name.includes("Bartosz"));
+            zalogowanaRola = "driver";
             uruchomAplikacje();
           } else {
             errBox.innerText = "Profil użytkownika nie został znaleziony w bazie!";
@@ -658,15 +404,9 @@
         }, 600);
 
       } catch (error) {
-        errBox.innerText = "Błąd logowania: Nieprawidłowy login lub hasło!";
+        errBox.innerText = "Błąd logowania: Błędne dane!";
         errBox.style.display = 'block';
       }
-    }
-
-    function przełączRolę() {
-      if (!maDualRole) return;
-      zalogowanaRola = (zalogowanaRola === 'disp') ? 'driver' : 'disp';
-      uruchomAplikacje();
     }
 
     function uruchomAplikacje() {
@@ -689,22 +429,15 @@
 
       if (zalogowanaRola === 'disp') {
         roleTitle.innerText = "👨‍💻 DYSPOZYTORNIA";
-        userLbl.innerText = zalogowanyUserObj ? `${zalogowanyUserObj.name} (Dyspozytor)` : "Bartosz (Dyspozytor)";
+        userLbl.innerText = zalogowanyUserObj ? `${zalogowanyUserObj.name} (Dyspozytor)` : "Bartosz";
         
         navBox.innerHTML = `
-          <div id="nav-disp-linie" class="nav-item"><span>🚏</span> Kreator Linii</div>
-          <div id="nav-disp-kierowcy" class="nav-item"><span>👨‍✈️</span> Profile & Podgląd</div>
-          <div id="nav-disp-kary" class="nav-item"><span>⚠️</span> Zarządzanie Karami</div>
+          <div id="nav-disp-linie" class="nav-item"><span>🚏</span> Linie & Przystanki</div>
           <div id="nav-disp-grafik" class="nav-item"><span>📅</span> Zarządzanie Grafikiem</div>
-          <div id="nav-disp-wiadomosci" class="nav-item"><span>💬</span> Wiadomości i Prośby</div>
         `;
 
         document.getElementById('nav-disp-linie').onclick = () => pokazWidok('disp-linie');
-        document.getElementById('nav-disp-kierowcy').onclick = () => pokazWidok('disp-kierowcy');
-        document.getElementById('nav-disp-kary').onclick = () => pokazWidok('disp-kary');
         document.getElementById('nav-disp-grafik').onclick = () => pokazWidok('disp-grafik');
-        document.getElementById('nav-disp-wiadomosci').onclick = () => pokazWidok('disp-wiadomosci');
-
         pokazWidok('disp-linie');
       } else {
         roleTitle.innerText = "🚌 PANEL KIEROWCY";
@@ -713,16 +446,12 @@
         navBox.innerHTML = `
           <div id="nav-driver-home" class="nav-item"><span>🧩</span> Strona Główna</div>
           <div id="nav-driver-grafik" class="nav-item"><span>📅</span> Miesięczny Grafik</div>
-          <div id="nav-driver-kurs" class="nav-item"><span>🚌</span> Dzisiejszy Kurs</div>
-          <div id="nav-driver-prosby" class="nav-item"><span>🙏</span> Zgłoś Prośbę</div>
-          <div id="nav-driver-powiadomienia" class="nav-item"><span>🔔</span> Powiadomienia</div>
+          <div id="nav-driver-kurs" class="nav-item"><span>🚌</span> Kurs</div>
         `;
 
         document.getElementById('nav-driver-home').onclick = () => pokazWidok('driver-home');
         document.getElementById('nav-driver-grafik').onclick = () => pokazWidok('driver-grafik');
         document.getElementById('nav-driver-kurs').onclick = () => pokazWidok('driver-kurs');
-        document.getElementById('nav-driver-prosby').onclick = () => pokazWidok('driver-prosby');
-        document.getElementById('nav-driver-powiadomienia').onclick = () => pokazWidok('driver-powiadomienia');
 
         if(zalogowanyUserObj) document.getElementById('driver-display-name').innerText = zalogowanyUserObj.name;
         pokazWidok('driver-home');
@@ -740,9 +469,131 @@
       if (nElem) nElem.classList.add('active');
     }
 
-    // PODPIĘCIE EVENTÓW
+    // GENEROWANIE GRAFIKU DLA KIEROWCY (NAPRAWIONA FUNKCJA)
+    function renderDriverCalendar() {
+      const grid = document.getElementById('driver-cal-grid');
+      if (!grid || !zalogowanyUserObj) return;
+      grid.innerHTML = "";
+
+      const daysInMonth = 31;
+      for (let day = 1; day <= daysInMonth; day++) {
+        const key = `${zalogowanyUserObj.id}_${day}`;
+        const shift = grafikBaza[key];
+
+        const dayBox = document.createElement('div');
+        dayBox.className = `day-box ${shift ? 'has-shift' : ''}`;
+        dayBox.innerHTML = `
+          <div style="font-weight:800; font-size: 14px;">${day}</div>
+          <div style="font-size:10px; color: var(--accent-cream);">${shift ? shift.linia : 'Wolne'}</div>
+        `;
+        grid.appendChild(dayBox);
+      }
+    }
+
+    // GENEROWANIE GRAFIKU DLA DYSPOZYTORA
+    function renderDispCalendar() {
+      const grid = document.getElementById('disp-cal-grid');
+      const selectedDriverId = document.getElementById('select-grafik-kierowca').value;
+      if (!grid) return;
+      grid.innerHTML = "";
+
+      const daysInMonth = 31;
+      for (let day = 1; day <= daysInMonth; day++) {
+        const key = `${selectedDriverId}_${day}`;
+        const shift = grafikBaza[key];
+
+        const dayBox = document.createElement('div');
+        dayBox.className = `day-box ${shift ? 'has-shift' : ''} ${wybranyDzienGrafiku === day ? 'selected' : ''}`;
+        dayBox.innerHTML = `
+          <div style="font-weight:800; font-size: 14px;">${day}</div>
+          <div style="font-size:10px; color: var(--accent-cream);">${shift ? shift.linia : 'Brak'}</div>
+        `;
+        dayBox.onclick = () => {
+          wybranyDzienGrafiku = day;
+          document.getElementById('wybrany-dzien-label').innerText = `Wybrany Dzień: ${day}`;
+          renderDispCalendar();
+        };
+        grid.appendChild(dayBox);
+      }
+    }
+
+    function populateSelects() {
+      const kSelect = document.getElementById('select-grafik-kierowca');
+      if (kSelect) {
+        kSelect.innerHTML = kierowcyBaza.map(k => `<option value="${k.id}">${k.name}</option>`).join('');
+        kSelect.onchange = renderDispCalendar;
+      }
+    }
+
+    function renderLinieDB() {
+      const container = document.getElementById('lista-linii-glowne');
+      const gLiniaSelect = document.getElementById('g-select-linia');
+      if (!container) return;
+
+      container.innerHTML = linieBaza.map(l => `
+        <div class="glass-card">
+          <h3 style="color: var(--accent-cream);">${l.numer}</h3>
+          <p style="font-size: 12px; color: #ccc; margin-top: 4px;">Trasa: ${l.kierunek || 'Standardowa'}</p>
+          <div style="margin-top: 10px; font-size: 11px; color: var(--text-dim);">Przystanków: ${l.przystanki ? l.przystanki.length : 0}</div>
+        </div>
+      `).join('');
+
+      if (gLiniaSelect) {
+        gLiniaSelect.innerHTML = linieBaza.map(l => `<option value="${l.numer}">${l.numer}</option>`).join('');
+      }
+    }
+
+    function renderStopsDB() {
+      const list = document.getElementById('stops-db-list');
+      if (!list) return;
+      list.innerHTML = przystankiBaza.map(s => `
+        <div style="background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 700; font-size: 13px;">${s.nazwa}</div>
+            <div style="font-size: 11px; color: var(--accent-cream-dim);">Mówiona: ${s.mowiona || s.nazwa}</div>
+          </div>
+          <button style="background:none; border:none; color: var(--accent-cream); cursor:pointer;" onclick="alert('Odtwarzanie zapowiedzi...')">🔊</button>
+        </div>
+      `).join('');
+    }
+
+    // MODAL HANDLERS
+    document.getElementById('btn-open-stops-db').onclick = () => document.getElementById('modal-stops').style.display = 'flex';
+    document.getElementById('btn-close-stops').onclick = () => document.getElementById('modal-stops').style.display = 'none';
+
+    document.getElementById('btn-add-stop-db').onclick = async () => {
+      const name = document.getElementById('stop-name-input').value.trim();
+      const voice = document.getElementById('stop-voice-input').value.trim();
+      if (!name) return alert('Wpisz nazwę przystanku!');
+
+      const id = Date.now();
+      await set(ref(db, `przystanki/${id}`), { id, nazwa: name, mowiona: voice || name });
+      document.getElementById('stop-name-input').value = '';
+      document.getElementById('stop-voice-input').value = '';
+    };
+
+    document.getElementById('btn-save-schedule').onclick = async () => {
+      const driverId = document.getElementById('select-grafik-kierowca').value;
+      const linia = document.getElementById('g-select-linia').value;
+      const kolka = document.getElementById('g-koolka').value;
+      const przerwaPo = document.getElementById('g-przerwa-po-kolku').value;
+      const przerwaCzas = document.getElementById('g-przerwa-czas').value;
+
+      if (!wybranyDzienGrafiku) return alert('Wybierz dzień z kalendarza!');
+
+      const key = `${driverId}_${wybranyDzienGrafiku}`;
+      await set(ref(db, `grafik/${key}`), {
+        linia, koleka: parseInt(kolka), przerwaPo: parseInt(przerwaPo), przerwaCzas: parseInt(przerwaCzas)
+      });
+      alert('Służba została pomyślnie zapisana!');
+    };
+
+    document.getElementById('btn-switch-role').onclick = () => {
+      zalogowanaRola = (zalogowanaRola === 'disp') ? 'driver' : 'disp';
+      uruchomAplikacje();
+    };
+
     document.getElementById('btn-login-main').onclick = zalogujDoSystemu;
-    document.getElementById('btn-switch-role').onclick = przełączRolę;
     document.getElementById('btn-logout').onclick = () => location.reload();
     document.getElementById('btn-toggle-sidebar').onclick = () => document.getElementById('sidebar').classList.toggle('hidden');
   </script>
