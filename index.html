@@ -186,14 +186,14 @@
       z-index: 1000; justify-content: center; align-items: center; padding: 15px;
     }
     .modal-box {
-      width: 100%; max-width: 650px; background: #121212; border: 1px solid rgba(138, 28, 36, 0.5);
+      width: 100%; max-width: 750px; background: #121212; border: 1px solid rgba(138, 28, 36, 0.5);
       border-radius: 20px; padding: 22px; max-height: 90vh; overflow-y: auto;
     }
 
     .grafik-container { display: flex; gap: 15px; height: 100%; }
     .grafik-main { flex: 1; display: flex; flex-direction: column; }
     .grafik-sidebar {
-      width: 300px; background: rgba(12, 12, 12, 0.85); border: 1px solid var(--glass-border);
+      width: 320px; background: rgba(12, 12, 12, 0.85); border: 1px solid var(--glass-border);
       border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px;
     }
 
@@ -205,7 +205,9 @@
     }
     .day-box:hover { border-color: var(--accent-maroon-bright); }
     .day-box.selected { border-color: var(--accent-cream); background: rgba(138, 28, 36, 0.25); }
-    .day-box.has-shift, .day-box.work { border-color: rgba(138, 28, 36, 0.6); background: rgba(92, 18, 24, 0.2); }
+    .day-box.has-shift { border-color: rgba(138, 28, 36, 0.6); background: rgba(92, 18, 24, 0.2); }
+    .day-box.status-urlop { border-color: rgba(255, 165, 0, 0.6); background: rgba(255, 165, 0, 0.15); }
+    .day-box.status-wolne { border-color: rgba(0, 150, 255, 0.6); background: rgba(0, 150, 255, 0.15); }
 
     .kurs-layout-grid { display: flex; flex-direction: column; flex: 1; gap: 10px; min-height: 0; }
 
@@ -256,6 +258,11 @@
     .live-progress-bar { width: 100%; height: 5px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden; }
     .live-progress-fill { height: 100%; background: linear-gradient(90deg, #70151c, #f5e8d0); width: 0%; transition: width 0.4s ease; }
 
+    .direction-container {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; margin-top: 10px;
+    }
+
     body.is-mobile .sidebar-menu { position: absolute; left: 0; top: 0; bottom: 0; width: 240px; z-index: 1000; box-shadow: 10px 0 30px rgba(0,0,0,0.8); }
     body.is-mobile .sidebar-menu.hidden { margin-left: -250px; }
     body.is-mobile .content-area { padding: 55px 10px 10px 10px !important; }
@@ -263,24 +270,7 @@
     body.is-mobile .btn-maroon { height: 40px; font-size: 12px; }
     body.is-mobile .grafik-container { flex-direction: column; }
     body.is-mobile .grafik-sidebar { width: 100%; }
-
-    @media (orientation: landscape) and (max-height: 500px) {
-      .content-area { padding: 8px 12px 8px 55px !important; }
-      .toggle-sidebar-btn { top: 8px; left: 8px; width: 36px; height: 36px; font-size: 18px; }
-      .glass-card { padding: 10px !important; margin-bottom: 6px !important; }
-      .card-title-bar { margin-bottom: 6px !important; }
-      .kurs-layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-      .stops-scroll { margin: 0; height: 100%; }
-      .stop-row { padding: 6px 10px; margin-bottom: 4px; font-size: 11px; }
-      .btn-maroon { height: 34px !important; font-size: 11px !important; }
-      .form-group { margin-bottom: 6px; }
-      .input-pill { height: 34px; font-size: 12px; }
-      .calendar-grid { gap: 4px; margin-top: 5px; }
-      .day-box { min-height: 35px; padding: 4px; font-size: 10px; }
-      .brand-title { font-size: 20px; }
-      .brand-sub { font-size: 11px; margin-bottom: 15px; }
-      .login-container { padding: 18px; max-width: 380px; }
-    }
+    body.is-mobile .direction-container { grid-template-columns: 1fr; }
   </style>
 </head>
 <body>
@@ -347,7 +337,7 @@
             <button class="btn-maroon" style="width: auto; padding: 0 14px; background: #222;" id="btn-open-stops-db">🚏 Baza Przystanków</button>
           </div>
         </div>
-        <div id="lista-linii-glowne" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;"></div>
+        <div id="lista-linii-glowne" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px;"></div>
       </div>
 
       <div id="view-disp-kierowcy" class="view-section">
@@ -418,7 +408,7 @@
 
       <div id="view-disp-grafik" class="view-section">
         <div class="card-title-bar">
-          <h2>Grafik Służb Kierowców z Planowaniem Przerw</h2>
+          <h2>Grafik Służb Kierowców, Przerw i Urlopów</h2>
         </div>
         <div class="grafik-container">
           <div class="grafik-main glass-card">
@@ -432,15 +422,24 @@
           </div>
 
           <div class="grafik-sidebar">
-            <h3 style="color: var(--accent-cream); font-size: 15px;">Przydziel Służbę / Dzień Wolny</h3>
+            <h3 style="color: var(--accent-cream); font-size: 15px;">Przydziel Służbę / Status</h3>
             <div id="wybrany-dzien-label" style="font-size: 12px; font-weight: 700; color: #fff;">Wybrany Dzień: Brak</div>
 
             <div class="form-group">
-              <label>Wybierz Służbę lub Stan</label>
-              <select id="g-select-linia" class="input-pill"></select>
+              <label>Typ Przydziału</label>
+              <select id="g-select-typ" class="input-pill">
+                <option value="linia">Służba na linii (Trasa)</option>
+                <option value="urlop">🌴 Urlop płatny</option>
+                <option value="wolne">🏠 Dzień wolny od pracy</option>
+              </select>
             </div>
 
-            <div id="g-shift-details">
+            <div id="section-grafik-linia-details">
+              <div class="form-group">
+                <label>Wybierz Linię</label>
+                <select id="g-select-linia" class="input-pill"></select>
+              </div>
+
               <div class="form-group">
                 <label>Liczba Kółek Do Zrobienia</label>
                 <input type="number" id="g-koolka" class="input-pill" value="5" min="1" max="15">
@@ -498,7 +497,7 @@
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 15px;">
           <div class="glass-card">
-            <div style="font-size: 11px; color: var(--text-dim);">DZISIEJSZA LINIA</div>
+            <div style="font-size: 11px; color: var(--text-dim);">DZISIEJSZA LINIA / STATUS</div>
             <div style="font-size: 22px; font-weight: 800; color: var(--accent-cream); margin-top: 2px;" id="driver-today-line">Linia 161</div>
             <p style="color: var(--text-dim); margin-top: 4px; font-size: 11px;" id="driver-today-dir">Trasa: -</p>
           </div>
@@ -512,7 +511,7 @@
           <div class="glass-card">
             <div style="font-size: 11px; color: var(--text-dim);">STATUS SŁUŻBY</div>
             <div style="font-size: 22px; font-weight: 800; color: var(--accent-cream); margin-top: 2px;" id="driver-status-text">Gotowy</div>
-            <button class="btn-maroon btn-drive-start" style="margin-top: 8px;" id="btn-home-start-course">Rozpocznij Kurs ➔</button>
+            <button class="btn-maroon btn-drive-start" style="margin-top: 8px;" id="btn-home-start-course">Rozpocznij Kurs (WYJ) ➔</button>
           </div>
         </div>
 
@@ -526,7 +525,7 @@
         <div class="glass-card" style="height: 100%; display: flex; flex-direction: column;">
           <div class="card-title-bar">
             <h2>Miesięczny Grafik Służb</h2>
-            <button class="btn-maroon btn-drive-start" style="width: auto; padding: 0 16px;" id="btn-grafik-start-course">▶ Rozpocznij Kurs</button>
+            <button class="btn-maroon btn-drive-start" style="width: auto; padding: 0 16px;" id="btn-grafik-start-course">▶ Rozpocznij Kurs (WYJ)</button>
           </div>
           <div class="calendar-grid" id="driver-cal-grid" style="flex: 1;"></div>
         </div>
@@ -557,7 +556,7 @@
           </div>
 
           <div class="course-status-banner" id="course-status-banner">
-            ☕ OBECNIE MASZ POSTÓJ / KURS WSTRZYMANY
+            ☕ OBECNIE MASZ POSTÓJ / KURSU WSTRZYMANY
           </div>
 
           <div id="cooldown-alert-bar" style="color: var(--accent-cream); font-size: 12px; font-weight: bold; margin-top: 4px; display: none;"></div>
@@ -636,31 +635,53 @@
     </div>
   </div>
 
-  <!-- MODAL: EDYCJA LINII -->
+  <!-- MODAL: EDYCJA / TWORZENIE LINII (OBOK SIEBIE KIERUNKI A->B ORAZ B->A) -->
   <div class="modal-overlay" id="modal-linia">
     <div class="modal-box">
-      <h2 style="color: var(--accent-cream); margin-bottom: 15px;" id="modal-title">Edycja Linii</h2>
+      <h2 style="color: var(--accent-cream); margin-bottom: 15px;" id="modal-title">Kreator i Edytor Linii</h2>
 
       <div class="form-group">
         <label>Numer / Nazwa Linii</label>
         <input type="text" id="m-l-numer" class="input-pill" placeholder="np. Linia 161">
       </div>
 
-      <div class="form-group">
-        <label>Kierunek Główny (np. Północ ➔ Południe)</label>
-        <input type="text" id="m-l-kierunek" class="input-pill" placeholder="np. Północ ➔ Południe">
+      <!-- KONTENER KIERUNKÓW A->B I B->A OBOK SIEBIE -->
+      <div class="direction-container">
+        <!-- KIERUNEK A -> B -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <h4 style="color: var(--accent-cream); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">➡️ Kierunek A ➔ B</h4>
+          <div class="form-group">
+            <label>Nazwa Kierunku A ➔ B</label>
+            <input type="text" id="m-l-kierunek-ab" class="input-pill" placeholder="np. Zakładowa MPK ➔ Rondo Legionów">
+          </div>
+          <div style="font-size: 11px; font-weight: 700; color: #ccc;">Przystanki Trasy A ➔ B:</div>
+          <div id="m-l-przystanki-ab-lista" style="display: flex; flex-direction: column; gap: 6px; max-height: 250px; overflow-y: auto; padding-right: 4px;"></div>
+          
+          <div style="display: flex; gap: 6px; margin-top: 4px;">
+            <select id="m-l-dodaj-p-ab-select" class="input-pill" style="flex: 1; height: 36px; font-size: 12px;"></select>
+            <button class="btn-maroon" style="width: auto; padding: 0 10px; height: 36px; font-size: 11px;" id="btn-add-p-ab">+ Dodaj</button>
+          </div>
+        </div>
+
+        <!-- KIERUNEK B -> A -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <h4 style="color: var(--accent-cream); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">⬅️ Kierunek B ➔ A</h4>
+          <div class="form-group">
+            <label>Nazwa Kierunku B ➔ A</label>
+            <input type="text" id="m-l-kierunek-ba" class="input-pill" placeholder="np. Rondo Legionów ➔ Zakładowa MPK">
+          </div>
+          <div style="font-size: 11px; font-weight: 700; color: #ccc;">Przystanki Trasy B ➔ A:</div>
+          <div id="m-l-przystanki-ba-lista" style="display: flex; flex-direction: column; gap: 6px; max-height: 250px; overflow-y: auto; padding-right: 4px;"></div>
+
+          <div style="display: flex; gap: 6px; margin-top: 4px;">
+            <select id="m-l-dodaj-p-ba-select" class="input-pill" style="flex: 1; height: 36px; font-size: 12px;"></select>
+            <button class="btn-maroon" style="width: auto; padding: 0 10px; height: 36px; font-size: 11px;" id="btn-add-p-ba">+ Dodaj</button>
+          </div>
+        </div>
       </div>
 
-      <h4 style="margin-top: 15px; margin-bottom: 8px;">Przystanki na Trasie Linii (w kolejności):</h4>
-      <div id="m-l-przystanki-lista" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;"></div>
-
-      <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-        <select id="m-l-dodaj-p-select" class="input-pill" style="flex: 1;"></select>
-        <button class="btn-maroon" style="width: auto; padding: 0 12px;" id="btn-add-stop-to-line-editor">+ Dodaj</button>
-      </div>
-
-      <div style="display: flex; gap: 8px; margin-top: 15px;">
-        <button class="btn-maroon" style="flex: 1;" id="btn-save-line-edit">Zapisz Zmiany</button>
+      <div style="display: flex; gap: 8px; margin-top: 20px;">
+        <button class="btn-maroon" style="flex: 1;" id="btn-save-line-edit">Zapisz Linię w Firebase</button>
         <button class="btn-maroon" style="flex: 1; background: #333;" id="btn-cancel-line-edit">Anuluj</button>
       </div>
     </div>
@@ -672,7 +693,7 @@
       <h2 style="color: var(--accent-cream); margin-bottom: 15px;">Zarządzanie Bazą Przystanków</h2>
 
       <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 15px;">
-        <h4 style="margin-bottom: 10px; color: #fff;">Dodaj Nowy Przystanek</h4>
+        <h4 style="margin-bottom: 10px; color: #fff;">Dodaj Nowy Przystanek Globalny</h4>
         <div class="form-group">
           <label>Nazwa Przystanku (wyświetlana)</label>
           <input type="text" id="bp-nazwa" class="input-pill" placeholder="np. Dworzec Główny">
@@ -681,10 +702,10 @@
           <label>Dokładna Zapowiedź Głosowa</label>
           <input type="text" id="bp-mowiona" class="input-pill" placeholder="np. Dworzec Główny Pętla">
         </div>
-        <button class="btn-maroon" id="btn-add-stop-global">+ Dodaj Przystanek</button>
+        <button class="btn-maroon" id="btn-add-stop-global">+ Dodaj Przystanek do Bazy Firebase</button>
       </div>
 
-      <h4 style="margin-bottom: 8px;">Dostępne Przystanki:</h4>
+      <h4 style="margin-bottom: 8px;">Dostępne Przystanki w Bazie:</h4>
       <div id="baza-przystankow-lista" style="max-height: 200px; overflow-y: auto;"></div>
 
       <button class="btn-maroon" style="margin-top: 15px; background: #333;" id="btn-close-stops-db">Zamknij</button>
@@ -711,7 +732,7 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // ZMIENNE APLIKACJI
+    // SYSTEM ZMIENNYCH LOKALNYCH
     let zalogowanaRola = null;
     let zalogowanyKierowcaObj = null;
     let clockInterval = null;
@@ -720,6 +741,8 @@
     let announcementTimeout = null;
     let isStopAnnouncementPlaying = false; 
 
+    let selectedDayForGrafik = null;
+
     let przystankiBaza = [];
     let linieBaza = [];
     let kierowcyBaza = [];
@@ -727,39 +750,19 @@
     let powiadomieniaBaza = {}; 
     let prosbyBaza = []; 
 
-    let wybranyDzienGrafik = null;
-    let currentStopIndex = 0;
-    let remainingTime = 0;
-    let isDriving = false;
-    let isStanding = false;
-
     let dyspozytorzyBaza = {
       "Bartosz": "bartosz2011!@#"
     };
-
-    // FUNKCJA DLA PRZECIWNEGO KIERUNKU
-    function zwrocPrzeciwnyKierunek(kierunekStr) {
-      if (!kierunekStr) return "Kierunek Przeciwny";
-      if (kierunekStr.includes("<->")) {
-        const parts = kierunekStr.split("<->");
-        return `${parts[1].trim()} <-> ${parts[0].trim()}`;
-      }
-      if (kierunekStr.includes("➔")) {
-        const parts = kierunekStr.split("➔");
-        return `${parts[1].trim()} ➔ ${parts[0].trim()}`;
-      }
-      if (kierunekStr.includes(">")) {
-        const parts = kierunekStr.split(">");
-        return `${parts[1].trim()} > ${parts[0].trim()}`;
-      }
-      return `${kierunekStr} (Powrót)`;
-    }
 
     // NASŁUCHIWANIE BAZY FIREBASE W CZASIE RZECZYWISTYM
     function initializeRealtimeListeners() {
       onValue(ref(db, 'dyspozytorzy'), (snapshot) => {
         const val = snapshot.val();
-        if (val) dyspozytorzyBaza = val;
+        if (val) {
+          dyspozytorzyBaza = val;
+        } else {
+          set(ref(db, 'dyspozytorzy/Bartosz'), "bartosz2011!@#");
+        }
       });
 
       onValue(ref(db, 'przystanki'), (snapshot) => {
@@ -812,10 +815,12 @@
       });
     }
 
-    // AUDIO SPEECH SYNTHESIS (ZAPOWIEDZI GŁOSOWE)
+    // AUDIO SPEECH SYNTHESIS
     let availableVoices = [];
     function loadVoices() {
-      if ('speechSynthesis' in window) availableVoices = window.speechSynthesis.getVoices();
+      if ('speechSynthesis' in window) {
+        availableVoices = window.speechSynthesis.getVoices();
+      }
     }
     if ('speechSynthesis' in window) {
       window.speechSynthesis.onvoiceschanged = loadVoices;
@@ -827,12 +832,18 @@
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(tekst);
         msg.lang = 'pl-PL';
+        
         if (availableVoices.length > 0) {
           const plVoice = availableVoices.find(v => v.lang.includes('pl'));
           if (plVoice) msg.voice = plVoice;
         }
+
         if (isOfficial) isStopAnnouncementPlaying = true;
-        msg.onend = () => { if (isOfficial) isStopAnnouncementPlaying = false; };
+
+        msg.onend = () => {
+          if (isOfficial) isStopAnnouncementPlaying = false;
+        };
+
         window.speechSynthesis.speak(msg);
       }
     }
@@ -844,14 +855,17 @@
         const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const timeStr = now.toLocaleTimeString('pl-PL');
         const dateStr = now.toLocaleDateString('pl-PL', optionsDate);
+        
         const elem = document.getElementById('driver-datetime');
-        if (elem) elem.innerText = `Dzisiaj jest: ${dateStr} | ${timeStr}`;
+        if (elem) {
+          elem.innerText = `Dzisiaj jest: ${dateStr} | ${timeStr}`;
+        }
       };
       updateClock();
       clockInterval = setInterval(updateClock, 1000);
     }
 
-    // AUTHENTICATION LOGOWANIE
+    // AUTHENTICATION FIREBASE LOGOWANIE
     async function zalogujDoSystemu() {
       const userVal = document.getElementById('l-user').value.trim();
       const passVal = document.getElementById('l-pass').value.trim();
@@ -860,8 +874,11 @@
 
       errBox.style.display = 'none';
 
-      if (deviceVal === 'mobile') document.body.classList.add('is-mobile');
-      else document.body.classList.remove('is-mobile');
+      if (deviceVal === 'mobile') {
+        document.body.classList.add('is-mobile');
+      } else {
+        document.body.classList.remove('is-mobile');
+      }
 
       const expectedPass = dyspozytorzyBaza[userVal];
       if (expectedPass !== undefined) {
@@ -994,7 +1011,7 @@
       }
     }
 
-    /* DYSPOZYTOR LOGIKA */
+    /* DYSPOZYTOR LOGIKA FIREBASE */
     function otworzBazePrzystankow() {
       document.getElementById('modal-baza-p').style.display = 'flex';
       renderListaBazyPrzystankow();
@@ -1036,10 +1053,17 @@
     }
 
     function uaktualnijSelectPrzystankow() {
-      const selectP = document.getElementById('m-l-dodaj-p-select');
-      if (!selectP) return;
-      selectP.innerHTML = "";
-      przystankiBaza.forEach(p => selectP.innerHTML += `<option value="${p.id}">${p.nazwa}</option>`);
+      const selectAB = document.getElementById('m-l-dodaj-p-ab-select');
+      const selectBA = document.getElementById('m-l-dodaj-p-ba-select');
+      if (!selectAB || !selectBA) return;
+      
+      selectAB.innerHTML = "";
+      selectBA.innerHTML = "";
+      
+      przystankiBaza.forEach(p => {
+        selectAB.innerHTML += `<option value="${p.id}">${p.nazwa}</option>`;
+        selectBA.innerHTML += `<option value="${p.id}">${p.nazwa}</option>`;
+      });
     }
 
     function renderGlowneLinie() {
@@ -1047,19 +1071,26 @@
       if(!box) return;
       box.innerHTML = "";
       linieBaza.forEach(l => {
-        const reverseDir = zwrocPrzeciwnyKierunek(l.kierunek);
         const card = document.createElement('div');
         card.className = 'glass-card';
         card.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <h3 style="color: var(--accent-cream);">${l.numer}</h3>
-            <button class="btn-maroon btn-edit-line" style="width: auto; padding: 4px 10px; font-size: 11px;">✏️ Edytuj</button>
+            <button class="btn-maroon btn-edit-line" style="width: auto; padding: 4px 10px; font-size: 11px;">✏️ Edytuj Linię</button>
           </div>
-          <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 4px;">Kierunek Główny: <strong>${l.kierunek}</strong></div>
-          <div style="font-size: 11px; color: var(--accent-cream-dim); margin-bottom: 8px;">Przeciwny Kierunek: <strong>${reverseDir}</strong></div>
-          <div style="font-size: 11px; font-weight: 700; color: #ccc; margin-bottom: 4px;">Przystanki (${l.przystanki ? l.przystanki.length : 0}):</div>
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            ${l.przystanki ? l.przystanki.map((p, i) => `<div style="font-size: 11px; background: rgba(255,255,255,0.04); padding: 4px 8px; border-radius: 6px;">${i+1}. ${p.nazwa} - ${p.czas}s</div>`).join('') : ''}
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px;">
+            <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+              <strong style="color: var(--accent-cream);">➡️ A ➔ B: ${l.kierunekAB || 'Brak'}</strong>
+              <div style="margin-top: 4px; color: var(--text-dim);">Przystanki (${l.przystankiAB ? l.przystankiAB.length : 0}):</div>
+              ${l.przystankiAB ? l.przystankiAB.map((p, i) => `<div style="font-size: 10px; background: rgba(255,255,255,0.04); padding: 2px 4px; margin-top: 2px; border-radius: 4px;">${i+1}. ${p.nazwa} (${p.czas}s)</div>`).join('') : '<div style="font-size: 10px;">Brak</div>'}
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+              <strong style="color: var(--accent-cream);">⬅️ B ➔ A: ${l.kierunekBA || 'Brak'}</strong>
+              <div style="margin-top: 4px; color: var(--text-dim);">Przystanki (${l.przystankiBA ? l.przystankiBA.length : 0}):</div>
+              ${l.przystankiBA ? l.przystankiBA.map((p, i) => `<div style="font-size: 10px; background: rgba(255,255,255,0.04); padding: 2px 4px; margin-top: 2px; border-radius: 4px;">${i+1}. ${p.nazwa} (${p.czas}s)</div>`).join('') : '<div style="font-size: 10px;">Brak</div>'}
+            </div>
           </div>
         `;
         card.querySelector('.btn-edit-line').onclick = () => otworzEdytorLinii(l.id);
@@ -1068,7 +1099,8 @@
     }
 
     let edytowanaLiniaId = null;
-    let tymczasowePrzystankiLinii = [];
+    let tymczasowePrzystankiAB = [];
+    let tymczasowePrzystankiBA = [];
 
     function otworzEdytorLinii(liniaId) {
       edytowanaLiniaId = liniaId;
@@ -1077,65 +1109,97 @@
 
       if (liniaId) {
         const l = linieBaza.find(x => x.id === liniaId);
-        document.getElementById('modal-title').innerText = `Edycja: ${l.numer}`;
-        document.getElementById('m-l-numer').value = l.numer;
-        document.getElementById('m-l-kierunek').value = l.kierunek;
-        tymczasowePrzystankiLinii = JSON.parse(JSON.stringify(l.przystanki || []));
+        document.getElementById('modal-title').innerText = `Edycja Linii: ${l.numer}`;
+        document.getElementById('m-l-numer').value = l.numer || "";
+        document.getElementById('m-l-kierunek-ab').value = l.kierunekAB || "";
+        document.getElementById('m-l-kierunek-ba').value = l.kierunekBA || "";
+        
+        tymczasowePrzystankiAB = JSON.parse(JSON.stringify(l.przystankiAB || (l.przystanki ? l.przystanki : [])));
+        tymczasowePrzystankiBA = JSON.parse(JSON.stringify(l.przystankiBA || []));
       } else {
-        document.getElementById('modal-title').innerText = `Tworzenie Nowej Linii`;
+        document.getElementById('modal-title').innerText = `Kreator Nowej Linii`;
         document.getElementById('m-l-numer').value = "";
-        document.getElementById('m-l-kierunek').value = "";
-        tymczasowePrzystankiLinii = [];
+        document.getElementById('m-l-kierunek-ab').value = "";
+        document.getElementById('m-l-kierunek-ba').value = "";
+        tymczasowePrzystankiAB = [];
+        tymczasowePrzystankiBA = [];
       }
       renderPrzystankiWEdytorze();
     }
 
     function renderPrzystankiWEdytorze() {
-      const list = document.getElementById('m-l-przystanki-lista');
-      list.innerHTML = "";
-      tymczasowePrzystankiLinii.forEach((p, idx) => {
+      // RENDER A->B
+      const listAB = document.getElementById('m-l-przystanki-ab-lista');
+      listAB.innerHTML = "";
+      tymczasowePrzystankiAB.forEach((p, idx) => {
         const item = document.createElement('div');
         item.className = 'list-item';
-        item.style.padding = '6px 10px';
+        item.style.padding = '4px 8px';
         item.innerHTML = `
-          <span style="font-size: 12px;"><strong>${idx+1}. ${p.nazwa}</strong></span>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <label style="font-size: 10px;">Czas (s):</label>
-            <input type="number" value="${p.czas}" class="input-pill inp-time" style="width: 55px; height: 28px; padding: 0 6px;">
-            <button style="background: none; border: none; color: var(--accent-cream); cursor: pointer;" class="btn-del-line-stop">🗑️</button>
+          <span style="font-size: 11px;"><strong>${idx+1}. ${p.nazwa}</strong></span>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <input type="number" value="${p.czas}" class="input-pill inp-time" style="width: 50px; height: 26px; padding: 0 4px; font-size: 11px;">
+            <button style="background: none; border: none; color: var(--accent-cream); cursor: pointer; font-size: 12px;" class="btn-del">🗑️</button>
           </div>
         `;
-        item.querySelector('.inp-time').onchange = (e) => zmienCzasPrzystanku(idx, e.target.value);
-        item.querySelector('.btn-del-line-stop').onclick = () => usunPrzystanekZLinii(idx);
-        list.appendChild(item);
+        item.querySelector('.inp-time').onchange = (e) => tymczasowePrzystankiAB[idx].czas = parseInt(e.target.value) || 15;
+        item.querySelector('.btn-del').onclick = () => { tymczasowePrzystankiAB.splice(idx, 1); renderPrzystankiWEdytorze(); };
+        listAB.appendChild(item);
+      });
+
+      // RENDER B->A
+      const listBA = document.getElementById('m-l-przystanki-ba-lista');
+      listBA.innerHTML = "";
+      tymczasowePrzystankiBA.forEach((p, idx) => {
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        item.style.padding = '4px 8px';
+        item.innerHTML = `
+          <span style="font-size: 11px;"><strong>${idx+1}. ${p.nazwa}</strong></span>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <input type="number" value="${p.czas}" class="input-pill inp-time" style="width: 50px; height: 26px; padding: 0 4px; font-size: 11px;">
+            <button style="background: none; border: none; color: var(--accent-cream); cursor: pointer; font-size: 12px;" class="btn-del">🗑️</button>
+          </div>
+        `;
+        item.querySelector('.inp-time').onchange = (e) => tymczasowePrzystankiBA[idx].czas = parseInt(e.target.value) || 15;
+        item.querySelector('.btn-del').onclick = () => { tymczasowePrzystankiBA.splice(idx, 1); renderPrzystankiWEdytorze(); };
+        listBA.appendChild(item);
       });
     }
 
-    function dodajPrzystanekDoLiniiEdycja() {
-      const pId = document.getElementById('m-l-dodaj-p-select').value;
+    function dodajPrzystanekAB() {
+      const pId = document.getElementById('m-l-dodaj-p-ab-select').value;
       const pObj = przystankiBaza.find(p => p.id == pId);
-      if (!pObj) return alert("Wybierz przystanek z bazy!");
-
-      tymczasowePrzystankiLinii.push({ id: pObj.id, nazwa: pObj.nazwa, mowiona: pObj.mowiona, czas: 15 });
+      if (!pObj) return alert("Wybierz przystanek!");
+      tymczasowePrzystankiAB.push({ id: pObj.id, nazwa: pObj.nazwa, mowiona: pObj.mowiona, czas: 15 });
       renderPrzystankiWEdytorze();
     }
 
-    function zmienCzasPrzystanku(idx, val) {
-      tymczasowePrzystankiLinii[idx].czas = parseInt(val) || 10;
-    }
-
-    function usunPrzystanekZLinii(idx) {
-      tymczasowePrzystankiLinii.splice(idx, 1);
+    function dodajPrzystanekBA() {
+      const pId = document.getElementById('m-l-dodaj-p-ba-select').value;
+      const pObj = przystankiBaza.find(p => p.id == pId);
+      if (!pObj) return alert("Wybierz przystanek!");
+      tymczasowePrzystankiBA.push({ id: pObj.id, nazwa: pObj.nazwa, mowiona: pObj.mowiona, czas: 15 });
       renderPrzystankiWEdytorze();
     }
 
     async function zapiszEdycjeLinii() {
       const numer = document.getElementById('m-l-numer').value.trim();
-      const kierunek = document.getElementById('m-l-kierunek').value.trim();
+      const kierunekAB = document.getElementById('m-l-kierunek-ab').value.trim();
+      const kierunekBA = document.getElementById('m-l-kierunek-ba').value.trim();
+
       if (!numer) return alert("Podaj numer linii!");
 
       const lineId = edytowanaLiniaId ? edytowanaLiniaId : Date.now();
-      const lineObj = { id: lineId, numer, kierunek, przystanki: tymczasowePrzystankiLinii };
+      const lineObj = { 
+        id: lineId, 
+        numer, 
+        kierunekAB: kierunekAB || "Kierunek A -> B", 
+        kierunekBA: kierunekBA || "Kierunek B -> A",
+        przystankiAB: tymczasowePrzystankiAB,
+        przystankiBA: tymczasowePrzystankiBA,
+        przystanki: tymczasowePrzystankiAB 
+      };
 
       await set(ref(db, `linie/${lineId}`), lineObj);
       zamknijModal('modal-linia');
@@ -1147,11 +1211,7 @@
       const selectG = document.getElementById('g-select-linia');
       if (selectG) {
         selectG.innerHTML = "";
-        selectG.innerHTML += `<option value="Dzień wolny">🏝️ Dzień wolny</option>`;
-        selectG.innerHTML += `<option value="Urlop">🏖️ Urlop</option>`;
-        linieBaza.forEach(l => {
-          selectG.innerHTML += `<option value="${l.numer}">${l.numer} (${l.kierunek})</option>`;
-        });
+        linieBaza.forEach(l => selectG.innerHTML += `<option value="${l.numer}">${l.numer} (${l.kierunekAB || 'Trasa'})</option>`);
       }
     }
 
@@ -1200,7 +1260,7 @@
         document.getElementById('k-login').value = "";
         document.getElementById('k-pass').value = "kierowca123";
 
-        alert("Konto kierowcy stworzone!");
+        alert("Konto kierowcy stworzone i powiązane z Firebase Auth!");
       } catch (err) {
         alert("Błąd tworzenia konta w Firebase Auth: " + err.message);
       }
@@ -1219,7 +1279,7 @@
       const newPass = prompt(`Wpisz nowe hasło dla kierowcy ${k.name}:`, k.pass);
       if (newPass !== null && newPass.trim() !== "") {
         await update(ref(db, `kierowcy/${id}`), { pass: newPass.trim() });
-        alert(`Zaktualizowano hasło w bazie na: ${newPass.trim()}`);
+        alert(`Zaktualizowano hasło w bazie podglądowej na: ${newPass.trim()}`);
       }
     }
 
@@ -1302,7 +1362,7 @@
       kierowcyBaza.forEach(k => {
         if (box) {
           const lObj = linieBaza.find(x => x.numer === k.activeLine) || linieBaza[0];
-          const trasa = lObj ? (lObj.przystanki || []) : [];
+          const trasa = lObj ? (lObj.przystankiAB || lObj.przystanki || []) : [];
           const currentStopName = trasa[k.currentStopIdx] ? trasa[k.currentStopIdx].nazwa : "Wyjazd na linię / Zajezdnia";
           const progress = trasa.length > 0 ? Math.round((k.currentStopIdx / trasa.length) * 100) : 0;
           
@@ -1340,7 +1400,7 @@
               <span style="font-size: 10px; color: var(--text-dim);">Kółka: ${k.completedLoops}/${k.assignedLoops}</span>
               <div>
                 <button style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 10px;" class="btn-change-pass">🔑 Hasło</button>
-                <button style="background: none; border: none; color: var(--accent-cream); cursor: pointer; font-size: 10px;" class="btn-del-driver">🗑️ Usuń</button>
+                <button style="background: none; border: none; color: var(--accent-cream); cursor: pointer; font-size: 10px;" class="btn-del-driver">🗑️ Usun</button>
               </div>
             </div>
           `;
@@ -1349,47 +1409,56 @@
           box.appendChild(liveCard);
         }
 
-        const opt = `<option value="${k.id}">${k.name} (${k.login})</option>`;
-        if (selectG) selectG.innerHTML += opt;
-        if (selectM) selectM.innerHTML += opt;
-        if (selectAKursy) selectAKursy.innerHTML += opt;
-        if (selectAPrzerwy) selectAPrzerwy.innerHTML += opt;
+        if (selectG) selectG.innerHTML += `<option value="${k.id}">${k.name}</option>`;
+        if (selectM) selectM.innerHTML += `<option value="${k.id}">${k.name}</option>`;
+        if (selectAKursy) selectAKursy.innerHTML += `<option value="${k.id}">${k.name}</option>`;
+        if (selectAPrzerwy) selectAPrzerwy.innerHTML += `<option value="${k.id}">${k.name}</option>`;
       });
     }
 
+    // GRAFIK DYSPOZYTORA Z URLOPEM I WOLNYM
     function generujKalendarzGrafikaDyspozytora() {
       const grid = document.getElementById('disp-cal-grid');
-      if (!grid) return;
+      const kSelect = document.getElementById('select-grafik-kierowca');
+      if (!grid || !kSelect) return;
+
       grid.innerHTML = "";
+      const selectedKierowcaId = kSelect.value;
 
-      const selectedDriverId = document.getElementById('select-grafik-kierowca').value;
-
-      for (let day = 1; day <= 30; day++) {
-        const key = `${selectedDriverId}_${day}`;
-        const shift = grafikBaza[key];
-
+      for (let day = 1; day <= 31; day++) {
         const dayBox = document.createElement('div');
         dayBox.className = 'day-box';
-        if (shift) dayBox.classList.add('has-shift');
-        if (wybranyDzienGrafik === day) dayBox.classList.add('selected');
+        
+        const gKey = `${selectedKierowcaId}_${day}`;
+        const shift = grafikBaza[gKey];
 
-        let shiftInfoText = '<span style="color: #666;">Brak służby</span>';
+        let shiftContent = `<span style="font-size: 10px; color: var(--text-dim);">Brak służby</span>`;
         if (shift) {
-          if (shift.linia === "Dzień wolny" || shift.linia === "Urlop") {
-            shiftInfoText = `<strong style="color: #f5e8d0;">${shift.linia}</strong>`;
+          if (shift.type === 'urlop') {
+            dayBox.classList.add('status-urlop');
+            shiftContent = `<span style="font-size: 10px; font-weight: 700; color: #ffa500;">🌴 URLOP</span>`;
+          } else if (shift.type === 'wolne') {
+            dayBox.classList.add('status-wolne');
+            shiftContent = `<span style="font-size: 10px; font-weight: 700; color: #0096ff;">🏠 WOLNE</span>`;
           } else {
-            shiftInfoText = `<strong style="color: #f5e8d0;">${shift.linia}</strong><br>${shift.koleka} kółek`;
+            dayBox.classList.add('has-shift');
+            shiftContent = `
+              <span style="font-size: 10px; font-weight: 700; color: var(--accent-cream);">${shift.linia}</span>
+              <span style="font-size: 9px; color: #ccc;">${shift.koleka} kółek | P: po ${shift.przerwaPo} (${shift.przerwaCzas}m)</span>
+            `;
           }
         }
 
+        if (selectedDayForGrafik === day) dayBox.classList.add('selected');
+
         dayBox.innerHTML = `
-          <div style="font-weight: 800; font-size: 12px; color: #fff;">Dzień ${day}</div>
-          <div style="font-size: 10px;">${shiftInfoText}</div>
+          <div style="font-size: 11px; font-weight: 800; color: #fff;">${day}</div>
+          <div>${shiftContent}</div>
         `;
 
         dayBox.onclick = () => {
-          wybranyDzienGrafik = day;
-          document.getElementById('wybrany-dzien-label').innerText = `Wybrany Dzień: Dzień ${day}`;
+          selectedDayForGrafik = day;
+          document.getElementById('wybrany-dzien-label').innerText = `Wybrany Dzień: ${day} Sierpnia`;
           generujKalendarzGrafikaDyspozytora();
         };
 
@@ -1397,50 +1466,66 @@
       }
     }
 
-    async function zapiszGrafikDlaKierowcy() {
-      const selectedDriverId = document.getElementById('select-grafik-kierowca').value;
-      const linia = document.getElementById('g-select-linia').value;
-      const koleka = parseInt(document.getElementById('g-koolka').value) || 5;
-      const przerwaPo = parseInt(document.getElementById('g-przerwa-po-kolku').value) || 2;
-      const przerwaCzas = parseInt(document.getElementById('g-przerwa-czas').value) || 15;
+    async function zapiszGrafik() {
+      const kId = document.getElementById('select-grafik-kierowca').value;
+      if (!selectedDayForGrafik) return alert("Wybierz dzień z kalendarza!");
 
-      if (!wybranyDzienGrafik) return alert("Wybierz dzień z kalendarza!");
+      const typ = document.getElementById('g-select-typ').value;
+      const gKey = `${kId}_${selectedDayForGrafik}`;
 
-      const key = `${selectedDriverId}_${wybranyDzienGrafik}`;
-      const shiftObj = {
-        linia,
-        koleka: (linia === "Dzień wolny" || linia === "Urlop") ? 0 : koleka,
-        przerwaPo,
-        przerwaCzas
-      };
+      if (typ === 'urlop') {
+        const shiftObj = { type: 'urlop', desc: 'Urlop Płatny' };
+        await set(ref(db, `grafik/${gKey}`), shiftObj);
 
-      await set(ref(db, `grafik/${key}`), shiftObj);
+        const notifId = Date.now();
+        await set(ref(db, `powiadomienia/${kId}/${notifId}`), {
+          id: notifId,
+          nadawca: "Dyspozytornia (Grafik)",
+          tresc: `🌴 Przydzielono URLOP na dzień ${selectedDayForGrafik} Sierpnia.`,
+          czas: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
+        });
 
-      if (linia !== "Dzień wolny" && linia !== "Urlop") {
-        await update(ref(db, `kierowcy/${selectedDriverId}`), {
-          activeLine: linia,
-          assignedLoops: koleka
+      } else if (typ === 'wolne') {
+        const shiftObj = { type: 'wolne', desc: 'Dzień Wolny' };
+        await set(ref(db, `grafik/${gKey}`), shiftObj);
+
+        const notifId = Date.now();
+        await set(ref(db, `powiadomienia/${kId}/${notifId}`), {
+          id: notifId,
+          nadawca: "Dyspozytornia (Grafik)",
+          tresc: `🏠 Przydzielono DZIEŃ WOLNY na dzień ${selectedDayForGrafik} Sierpnia.`,
+          czas: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
+        });
+
+      } else {
+        const linia = document.getElementById('g-select-linia').value;
+        const koolka = parseInt(document.getElementById('g-koolka').value) || 5;
+        const przerwaPo = parseInt(document.getElementById('g-przerwa-po-kolku').value) || 2;
+        const przerwaCzas = parseInt(document.getElementById('g-przerwa-czas').value) || 15;
+
+        const shiftObj = {
+          type: 'linia',
+          linia,
+          koleka: koolka,
+          przerwaPo,
+          przerwaCzas
+        };
+
+        await set(ref(db, `grafik/${gKey}`), shiftObj);
+
+        const notifId = Date.now();
+        await set(ref(db, `powiadomienia/${kId}/${notifId}`), {
+          id: notifId,
+          nadawca: "Dyspozytornia (Grafik)",
+          tresc: `Przypisano służbę na dzień ${selectedDayForGrafik} Sierpnia: ${linia}, Kółek: ${koolka}. Przerwa (${przerwaCzas} min) zaplanowana po ${przerwaPo} kółku.`,
+          czas: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
         });
       }
 
-      const notifId = Date.now();
-      let notifMsg = `Przypisano status na dzień ${wybranyDzienGrafik}: ${linia}`;
-      if (linia !== "Dzień wolny" && linia !== "Urlop") {
-        notifMsg = `Przypisano służbę na dzień ${wybranyDzienGrafik}: ${linia}, Kółek: ${koleka}. Przerwa (${przerwaCzas} min) zaplanowana po ${przerwaPo} kółku.`;
-      }
-
-      await set(ref(db, `powiadomienia/${selectedDriverId}/${notifId}`), {
-        id: notifId,
-        nadawca: "Dyspozytornia (Grafik)",
-        tresc: notifMsg,
-        czas: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
-      });
-
-      alert("Służba / status zapisany w grafiku i przekazany kierowcy!");
-      generujKalendarzGrafikaDyspozytora();
+      alert("Grafik zaktualizowany w bazie Firebase!");
     }
 
-    async function wyslijWiadomoscOdDyspozytora() {
+    async function sendDispatcherMessage() {
       const kId = document.getElementById('msg-kierowca').value;
       const tytul = document.getElementById('msg-tytul').value.trim();
       const tresc = document.getElementById('msg-tresc').value.trim();
@@ -1450,316 +1535,95 @@
       const notifId = Date.now();
       await set(ref(db, `powiadomienia/${kId}/${notifId}`), {
         id: notifId,
-        nadawca: `Dyspozytor (${tytul})`,
-        tresc: tresc,
+        nadawca: tytul || "Dyspozytornia",
+        tresc,
         czas: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
       });
 
       document.getElementById('msg-tresc').value = "";
-      alert("Wiadomość została wysłana do kierowcy!");
+      alert("Powiadomienie zostało przesłane do kierowcy!");
     }
 
     function renderDispProsby() {
-      const box = document.getElementById('disp-prosoby-lista');
-      if (!box) return;
-      box.innerHTML = "";
+      const list = document.getElementById('disp-prosoby-lista');
+      if(!list) return;
+      list.innerHTML = "";
 
       if (prosbyBaza.length === 0) {
-        box.innerHTML = `<div style="font-size: 12px; color: var(--text-dim);">Brak brakujących lub oczekujących zgłoszeń od kierowców.</div>`;
+        list.innerHTML = `<div style="font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 20px;">Brak nowych zgłoszeń od kierowców.</div>`;
         return;
       }
 
-      prosbyBaza.reverse().forEach(p => {
+      prosbyBaza.forEach(p => {
         const item = document.createElement('div');
         item.className = 'list-item';
         item.style.flexDirection = 'column';
         item.style.alignItems = 'flex-start';
+        item.style.gap = '6px';
+
         item.innerHTML = `
-          <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 4px;">
-            <strong style="color: var(--accent-cream);">${p.kierowcaName} - ${p.typ}</strong>
-            <span style="font-size: 10px; color: var(--text-dim);">${p.data}</span>
+          <div style="display: flex; justify-content: space-between; width: 100%;">
+            <strong style="color: var(--accent-cream); font-size: 12px;">👨‍✈️ ${p.driverName} - ${p.typ}</strong>
+            <span style="font-size: 10px; color: var(--text-dim);">${p.czas}</span>
           </div>
-          <p style="font-size: 12px; color: #fff;">${p.opis}</p>
+          <div style="font-size: 12px; color: #fff;">${p.tresc}</div>
+          <button class="btn-maroon btn-del-prosba" style="height: 24px; padding: 0 8px; font-size: 10px; margin-top: 4px; background: #333;">Oznacz jako załatwione ✓</button>
         `;
-        box.appendChild(item);
+        item.querySelector('.btn-del-prosba').onclick = async () => {
+          await remove(ref(db, `prosby/${p.id}`));
+        };
+        list.appendChild(item);
       });
     }
 
-    /* KIEROWCA LOGIKA Z UWZGLĘDNIENIEM PRZECIWNEGO KIERUNKU */
-    function pobierzAktualnaTraseIInfo() {
-      if (!zalogowanyKierowcaObj) return { trasa: [], liniaObj: null, jestOd wrocona: false, kierunekOpis: "-" };
-
-      const liniaObj = linieBaza.find(l => l.numer === zalogowanyKierowcaObj.activeLine) || linieBaza[0];
-      if (!liniaObj || !liniaObj.przystanki) return { trasa: [], liniaObj: null, jestOd wrocona: false, kierunekOpis: "-" };
-
-      const isReverse = (zalogowanyKierowcaObj.completedLoops % 2) === 1;
-      let trasa = [...liniaObj.przystanki];
-      let kierunekOpis = liniaObj.kierunek;
-
-      if (isReverse) {
-        trasa.reverse();
-        kierunekOpis = zwrocPrzeciwnyKierunek(liniaObj.kierunek);
-      }
-
-      return { trasa, liniaObj, jestOd wrocona: isReverse, kierunekOpis };
-    }
-
+    /* KIEROWCA LOGIKA Z FIREBASE */
     function odswiezDaneKierowcyHome() {
       if (!zalogowanyKierowcaObj) return;
 
       document.getElementById('driver-display-name').innerText = zalogowanyKierowcaObj.name;
       document.getElementById('driver-today-line').innerText = zalogowanyKierowcaObj.activeLine;
-      
-      const { kierunekOpis } = pobierzAktualnaTraseIInfo();
-      document.getElementById('driver-today-dir').innerText = `Trasa: ${kierunekOpis}`;
-
       document.getElementById('driver-today-loops-goal').innerText = `${zalogowanyKierowcaObj.assignedLoops} kółek`;
       document.getElementById('driver-completed-loops-val').innerText = zalogowanyKierowcaObj.completedLoops;
-      
-      const penTag = document.getElementById('driver-penalty-tag');
+      document.getElementById('driver-status-text').innerText = zalogowanyKierowcaObj.isOnBreak ? "PRZERWA" : zalogowanyKierowcaObj.statusText;
+
+      const penaltyTag = document.getElementById('driver-penalty-tag');
       if (zalogowanyKierowcaObj.punishmentLoops > 0) {
-        penTag.innerText = `(+${zalogowanyKierowcaObj.punishmentLoops} karne)`;
-        penTag.style.color = '#ff6666';
-      } else penTag.innerText = '';
+        penaltyTag.innerHTML = `<span class="penalty-badge">+${zalogowanyKierowcaObj.punishmentLoops} KARNE</span>`;
+      } else {
+        penaltyTag.innerHTML = "";
+      }
 
-      document.getElementById('driver-status-text').innerText = zalogowanyKierowcaObj.isOnBreak ? "Przerwa" : zalogowanyKierowcaObj.statusText;
+      const lObj = linieBaza.find(x => x.numer === zalogowanyKierowcaObj.activeLine);
+      if (lObj) {
+        document.getElementById('driver-today-dir').innerText = `Trasa: ${lObj.kierunekAB || lObj.kierunek || 'Główna'}`;
+      }
 
-      const notifBox = document.getElementById('driver-home-notif-list');
-      if (notifBox) {
-        notifBox.innerHTML = "";
-        const userNotifs = powiadomieniaBaza[zalogowanyKierowcaObj.id] ? Object.values(powiadomieniaBaza[zalogowanyKierowcaObj.id]) : [];
-        userNotifs.slice(-2).reverse().forEach(n => {
-          notifBox.innerHTML += `
-            <div class="list-item" style="font-size: 11px;">
-              <div><strong>${n.nadawca}:</strong> ${n.tresc}</div>
-              <span style="color: var(--text-dim); font-size: 10px;">${n.czas}</span>
+      renderDriverHomePowiadomienia();
+    }
+
+    function renderDriverHomePowiadomienia() {
+      const box = document.getElementById('driver-home-notif-list');
+      if (!box || !zalogowanyKierowcaObj) return;
+      box.innerHTML = "";
+
+      const userNotifs = powiadomieniaBaza[zalogowanyKierowcaObj.id] ? Object.values(powiadomieniaBaza[zalogowanyKierowcaObj.id]) : [];
+      const recent = userNotifs.reverse().slice(0, 3);
+
+      if (recent.length === 0) {
+        box.innerHTML = `<div style="font-size: 11px; color: var(--text-dim);">Brak ostatnich komunikatów.</div>`;
+        return;
+      }
+
+      recent.forEach(n => {
+        box.innerHTML += `
+          <div class="list-item" style="padding: 6px 10px; margin-bottom: 4px;">
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--accent-cream);">${n.nadawca} <span style="font-weight:400; color: var(--text-dim);">(${n.czas})</span></div>
+              <div style="font-size: 11px; color: #fff;">${n.tresc}</div>
             </div>
-          `;
-        });
-      }
-    }
-
-    function generujKalendarzKierowcy() {
-      const grid = document.getElementById('driver-cal-grid');
-      if (!grid || !zalogowanyKierowcaObj) return;
-      grid.innerHTML = "";
-
-      for (let day = 1; day <= 30; day++) {
-        const key = `${zalogowanyKierowcaObj.id}_${day}`;
-        const shift = grafikBaza[key];
-
-        const dayBox = document.createElement('div');
-        dayBox.className = 'day-box';
-        if (shift) dayBox.classList.add('work');
-
-        let shiftText = '<span style="color: #666;">Wolne</span>';
-        if (shift) {
-          if (shift.linia === "Dzień wolny" || shift.linia === "Urlop") {
-            shiftText = `<strong style="color: #f5e8d0;">${shift.linia}</strong>`;
-          } else {
-            shiftText = `<strong style="color: #f5e8d0;">${shift.linia}</strong><br>${shift.koleka} kółek`;
-          }
-        }
-
-        dayBox.innerHTML = `
-          <div style="font-weight: 800; font-size: 11px; color: #fff;">Dzień ${day}</div>
-          <div style="font-size: 10px;">${shiftText}</div>
-        `;
-        grid.appendChild(dayBox);
-      }
-    }
-
-    function renderStopsKierowcy() {
-      if (!zalogowanyKierowcaObj) return;
-
-      const { trasa, liniaObj, jestOd wrocona, kierunekOpis } = pobierzAktualnaTraseIInfo();
-
-      document.getElementById('active-line-name').innerText = zalogowanyKierowcaObj.activeLine;
-      document.getElementById('current-loop-num').innerText = zalogowanyKierowcaObj.completedLoops + 1;
-      document.getElementById('max-loops-num').innerText = zalogowanyKierowcaObj.assignedLoops;
-      document.getElementById('active-route-title').innerText = kierunekOpis;
-
-      const stopsContainer = document.getElementById('stops-list');
-      stopsContainer.innerHTML = "";
-
-      if (!trasa || trasa.length === 0) {
-        stopsContainer.innerHTML = `<div style="padding: 10px; color: var(--text-dim);">Brak przystanków dla wybranej linii.</div>`;
-        return;
-      }
-
-      trasa.forEach((stop, idx) => {
-        const row = document.createElement('div');
-        row.className = 'stop-row';
-
-        if (idx < currentStopIndex) row.classList.add('passed');
-        else if (idx === currentStopIndex) row.classList.add('active');
-
-        row.innerHTML = `
-          <div>
-            <strong>${idx + 1}. ${stop.nazwa}</strong>
-            <div style="font-size: 10px; color: var(--text-dim);">Czas dojazdu: ${stop.czas}s</div>
           </div>
-          <span style="font-size: 11px; font-weight: bold;">${idx < currentStopIndex ? '✓ Zaliczony' : (idx === currentStopIndex ? '➔ Obecny' : '')}</span>
         `;
-        stopsContainer.appendChild(row);
       });
-    }
-
-    async function zacznijKursDriver() {
-      if (!zalogowanyKierowcaObj) return;
-      if (zalogowanyKierowcaObj.isOnBreak) return alert("Masz aktywną przerwę! Nie możesz zacząć kursu.");
-
-      pokazWidok('driver-kurs');
-      isDriving = true;
-      isStanding = false;
-      document.getElementById('course-status-banner').style.display = 'none';
-
-      await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
-        statusText: "W trakcie kursu"
-      });
-
-      uruchomOdliczaniePrzystanku();
-    }
-
-    function uruchomOdliczaniePrzystanku() {
-      clearInterval(timerInterval);
-      const { trasa } = pobierzAktualnaTraseIInfo();
-
-      if (currentStopIndex >= trasa.length) {
-        skonczKoolko();
-        return;
-      }
-
-      const currentStop = trasa[currentStopIndex];
-      remainingTime = currentStop ? currentStop.czas : 30;
-
-      czytajTekst(`Następny przystanek: ${currentStop.mowiona || currentStop.nazwa}`, true);
-
-      timerInterval = setInterval(() => {
-        if (!isDriving || isStanding) return;
-
-        remainingTime--;
-        document.getElementById('timer').innerText = `00:${remainingTime < 10 ? '0' : ''}${remainingTime}`;
-
-        if (remainingTime <= 0) {
-          clearInterval(timerInterval);
-          przejdzDoNastepnegoPrzystanku();
-        }
-      }, 1000);
-    }
-
-    async function przejdzDoNastepnegoPrzystanku() {
-      const { trasa } = pobierzAktualnaTraseIInfo();
-      currentStopIndex++;
-
-      await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
-        currentStopIdx: currentStopIndex
-      });
-
-      if (currentStopIndex >= trasa.length) {
-        skonczKoolko();
-      } else {
-        renderStopsKierowcy();
-        uruchomOdliczaniePrzystanku();
-      }
-    }
-
-    async function skonczKoolko() {
-      clearInterval(timerInterval);
-      isDriving = false;
-
-      const newCompleted = zalogowanyKierowcaObj.completedLoops + 1;
-      currentStopIndex = 0;
-
-      await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
-        completedLoops: newCompleted,
-        currentStopIdx: 0,
-        statusText: "Postój"
-      });
-
-      renderStopsKierowcy();
-
-      const overlay = document.getElementById('loop-overlay');
-      overlay.style.display = 'flex';
-
-      if (newCompleted >= zalogowanyKierowcaObj.assignedLoops) {
-        document.getElementById('overlay-title').innerText = "🎉 Zakończono całą służbę!";
-        document.getElementById('overlay-desc').innerText = "Wszystkie kółka zostały pomyślnie wykonane.";
-        document.getElementById('btn-next-loop-action').innerText = "Powrót do pulpitu";
-        document.getElementById('btn-next-loop-action').onclick = () => {
-          overlay.style.display = 'none';
-          pokazWidok('driver-home');
-        };
-      } else {
-        document.getElementById('overlay-title').innerText = `Skończono kółko ${newCompleted}!`;
-        document.getElementById('overlay-desc').innerText = "Następny kurs odbędzie się w odwrotnym kierunku.";
-        document.getElementById('btn-next-loop-action').innerText = "Zacznij kolejny kurs ▶";
-        document.getElementById('btn-next-loop-action').onclick = () => {
-          overlay.style.display = 'none';
-          zacznijKursDriver();
-        };
-      }
-    }
-
-    async function zatrzymajKursDriver() {
-      clearInterval(timerInterval);
-      isDriving = false;
-      document.getElementById('timer').innerText = "--:--";
-
-      if (zalogowanyKierowcaObj) {
-        await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
-          statusText: "Zatrzymany"
-        });
-      }
-    }
-
-    async function przełączPostojDriver() {
-      isStanding = !isStanding;
-      const banner = document.getElementById('course-status-banner');
-
-      if (isStanding) {
-        banner.style.display = 'block';
-        if (zalogowanyKierowcaObj) {
-          await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
-            statusText: "Postój"
-          });
-        }
-      } else {
-        banner.style.display = 'none';
-        if (zalogowanyKierowcaObj) {
-          await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
-            statusText: "W trakcie kursu"
-          });
-        }
-      }
-    }
-
-    function wygłosZapowiedz() {
-      const select = document.getElementById('quick-announcement-select');
-      const val = select.value;
-      czytajTekst(val, false);
-    }
-
-    async function wyslijZgloszenieKierowcy() {
-      const typ = document.getElementById('p-typ').value;
-      const wlasny = document.getElementById('p-wlasny-temat').value.trim();
-      const powod = document.getElementById('p-powod').value.trim();
-
-      if (!powod) return alert("Wpisz treść / opis zgłoszenia!");
-
-      const prosbaObj = {
-        id: Date.now(),
-        kierowcaId: zalogowanyKierowcaObj.id,
-        kierowcaName: zalogowanyKierowcaObj.name,
-        typ: typ === "Własny temat" ? wlasny : typ,
-        opis: powod,
-        data: new Date().toLocaleString('pl-PL')
-      };
-
-      await push(ref(db, 'prosby'), prosbaObj);
-
-      document.getElementById('p-powod').value = "";
-      alert("Zgłoszenie zostało pomyślnie wysłane do dyspozytora!");
     }
 
     function renderDriverPowiadomienia() {
@@ -1767,108 +1631,297 @@
       if (!box || !zalogowanyKierowcaObj) return;
       box.innerHTML = "";
 
-      const notifs = powiadomieniaBaza[zalogowanyKierowcaObj.id] ? Object.values(powiadomieniaBaza[zalogowanyKierowcaObj.id]) : [];
+      const userNotifs = powiadomieniaBaza[zalogowanyKierowcaObj.id] ? Object.values(powiadomieniaBaza[zalogowanyKierowcaObj.id]) : [];
 
-      if (notifs.length === 0) {
-        box.innerHTML = `<div style="font-size: 12px; color: var(--text-dim);">Brak wiadomości.</div>`;
+      if (userNotifs.length === 0) {
+        box.innerHTML = `<div style="font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 20px;">Brak powiadomień.</div>`;
         return;
       }
 
-      notifs.reverse().forEach(n => {
+      userNotifs.reverse().forEach(n => {
         box.innerHTML += `
-          <div class="list-item" style="flex-direction: column; align-items: flex-start;">
-            <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 4px;">
-              <strong style="color: var(--accent-cream);">${n.nadawca}</strong>
+          <div class="list-item" style="padding: 8px 12px; margin-bottom: 6px; flex-direction: column; align-items: flex-start;">
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+              <strong style="color: var(--accent-cream); font-size: 12px;">${n.nadawca}</strong>
               <span style="font-size: 10px; color: var(--text-dim);">${n.czas}</span>
             </div>
-            <div style="font-size: 12px; color: #fff;">${n.tresc}</div>
+            <div style="font-size: 12px; color: #fff; margin-top: 2px;">${n.tresc}</div>
           </div>
         `;
       });
     }
 
-    // PODŁĄCZENIE ZDARZEŃ BUTTONÓW I FORMULARZY
+    function generujKalendarzKierowcy() {
+      const grid = document.getElementById('driver-cal-grid');
+      if (!grid || !zalogowanyKierowcaObj) return;
+      grid.innerHTML = "";
+
+      for (let day = 1; day <= 31; day++) {
+        const dayBox = document.createElement('div');
+        dayBox.className = 'day-box';
+
+        const gKey = `${zalogowanyKierowcaObj.id}_${day}`;
+        const shift = grafikBaza[gKey];
+
+        let shiftContent = `<span style="font-size: 10px; color: var(--text-dim);">Brak</span>`;
+        if (shift) {
+          if (shift.type === 'urlop') {
+            dayBox.classList.add('status-urlop');
+            shiftContent = `<span style="font-size: 10px; font-weight: 700; color: #ffa500;">🌴 URLOP</span>`;
+          } else if (shift.type === 'wolne') {
+            dayBox.classList.add('status-wolne');
+            shiftContent = `<span style="font-size: 10px; font-weight: 700; color: #0096ff;">🏠 WOLNE</span>`;
+          } else {
+            dayBox.classList.add('has-shift');
+            shiftContent = `
+              <span style="font-size: 10px; font-weight: 700; color: var(--accent-cream);">${shift.linia}</span>
+              <span style="font-size: 9px; color: #ccc;">${shift.koleka} kółek</span>
+            `;
+          }
+        }
+
+        dayBox.innerHTML = `
+          <div style="font-size: 11px; font-weight: 800; color: #fff;">${day}</div>
+          <div>${shiftContent}</div>
+        `;
+        grid.appendChild(dayBox);
+      }
+    }
+
+    function renderStopsKierowcy() {
+      const box = document.getElementById('stops-list');
+      if (!box || !zalogowanyKierowcaObj) return;
+      box.innerHTML = "";
+
+      const lineObj = linieBaza.find(x => x.numer === zalogowanyKierowcaObj.activeLine);
+      
+      // USTALANIE TRASY NA PODSTAWIE KIERUNKU (PARZYSTE / NIEPARZYSTE KÓŁKO)
+      let trasa = [];
+      let isDirectionBA = (zalogowanyKierowcaObj.currentLoop % 2 !== 0);
+
+      if (lineObj) {
+        if (isDirectionBA && lineObj.przystankiBA && lineObj.przystankiBA.length > 0) {
+          trasa = lineObj.przystankiBA;
+        } else {
+          trasa = lineObj.przystankiAB || lineObj.przystanki || [];
+        }
+      }
+
+      document.getElementById('active-line-name').innerText = zalogowanyKierowcaObj.activeLine;
+      document.getElementById('current-loop-num').innerText = zalogowanyKierowcaObj.completedLoops + 1;
+      document.getElementById('max-loops-num').innerText = zalogowanyKierowcaObj.assignedLoops;
+
+      const titleRoute = document.getElementById('active-route-title');
+      if (lineObj) {
+        titleRoute.innerText = isDirectionBA ? (lineObj.kierunekBA || "Kierunek B -> A") : (lineObj.kierunekAB || lineObj.kierunek || "Kierunek A -> B");
+      }
+
+      if (trasa.length === 0) {
+        box.innerHTML = `<div style="font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 20px;">Brak przystanków dla wybranej linii.</div>`;
+        return;
+      }
+
+      trasa.forEach((p, idx) => {
+        const row = document.createElement('div');
+        row.className = 'stop-row';
+
+        if (idx === zalogowanyKierowcaObj.currentStopIdx) row.classList.add('active');
+        if (idx < zalogowanyKierowcaObj.currentStopIdx) row.classList.add('passed');
+
+        row.innerHTML = `
+          <div>
+            <strong>${idx + 1}. ${p.nazwa}</strong>
+            <div style="font-size: 10px; color: var(--text-dim);">Zapowiedź: "${p.mowiona}"</div>
+          </div>
+          <div style="font-weight: 700; color: var(--accent-cream); font-size: 12px;">${p.czas} s</div>
+        `;
+        box.appendChild(row);
+      });
+    }
+
+    // STEROWANIE KURSEM DLA KIEROWCY
+    async function startCourseDrive() {
+      if (!zalogowanyKierowcaObj) return;
+      if (zalogowanyKierowcaObj.isOnBreak) return alert("Masz aktywną przerwę dyspozytorską! Kurs zablokowany.");
+
+      await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
+        statusText: "W trakcie kursu",
+        currentStopIdx: 0
+      });
+
+      pokazWidok('driver-kurs');
+      czytajTekst("Rozpoczynamy kurs. Proszę zamknąć drzwi.", true);
+      renderStopsKierowcy();
+    }
+
+    async function nextStopDrive() {
+      if (!zalogowanyKierowcaObj) return;
+
+      const lineObj = linieBaza.find(x => x.numer === zalogowanyKierowcaObj.activeLine);
+      let isDirectionBA = (zalogowanyKierowcaObj.currentLoop % 2 !== 0);
+      let trasa = lineObj ? (isDirectionBA && lineObj.przystankiBA && lineObj.przystankiBA.length > 0 ? lineObj.przystankiBA : (lineObj.przystankiAB || lineObj.przystanki || [])) : [];
+
+      if (zalogowanyKierowcaObj.currentStopIdx < trasa.length - 1) {
+        const nextIdx = zalogowanyKierowcaObj.currentStopIdx + 1;
+        await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
+          currentStopIdx: nextIdx
+        });
+
+        const stop = trasa[nextIdx];
+        czytajTekst(`Następny przystanek: ${stop.mowiona || stop.nazwa}`, true);
+        renderStopsKierowcy();
+      } else {
+        // KOŃCZENIE KÓŁKA
+        const newCompleted = zalogowanyKierowcaObj.completedLoops + 1;
+        const nextLoopIndex = zalogowanyKierowcaObj.currentLoop + 1;
+
+        await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
+          completedLoops: newCompleted,
+          currentLoop: nextLoopIndex,
+          currentStopIdx: 0,
+          statusText: "Postój"
+        });
+
+        czytajTekst("Koniec trasy. Dziękujemy za jazdę.", true);
+        document.getElementById('loop-overlay').style.display = 'flex';
+        renderStopsKierowcy();
+      }
+    }
+
+    async function continueNextLoop() {
+      document.getElementById('loop-overlay').style.display = 'none';
+      await startCourseDrive();
+    }
+
+    // FORMULARZ ZGŁOSZEŃ Z DYKTOWANIEM GŁOSOWYM
+    let recognition = null;
+    function initSpeechRecognition() {
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'pl-PL';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = (event) => {
+          let transcript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            transcript += event.results[i][0].transcript;
+          }
+          document.getElementById('p-powod').value = transcript;
+        };
+
+        recognition.onend = () => {
+          document.getElementById('btn-start-voice').style.display = 'inline-flex';
+          document.getElementById('btn-stop-voice').style.display = 'none';
+        };
+      }
+    }
+
+    function startVoiceInput() {
+      if (!recognition) initSpeechRecognition();
+      if (recognition) {
+        recognition.start();
+        document.getElementById('btn-start-voice').style.display = 'none';
+        document.getElementById('btn-stop-voice').style.display = 'inline-flex';
+      } else {
+        alert("Twoja przeglądarka nie obsługuje rozpoznawania mowy!");
+      }
+    }
+
+    function stopVoiceInput() {
+      if (recognition) {
+        recognition.stop();
+      }
+    }
+
+    async function sendDriverRequest() {
+      if (!zalogowanyKierowcaObj) return;
+
+      const typSelect = document.getElementById('p-typ').value;
+      const wlasnyTemat = document.getElementById('p-wlasny-temat').value.trim();
+      const tresc = document.getElementById('p-powod').value.trim();
+
+      const finalTyp = (typSelect === 'Własny temat' && wlasnyTemat) ? wlasnyTemat : typSelect;
+
+      if (!tresc) return alert("Wpisz opis swojej prośby / zgłoszenia!");
+
+      const newId = Date.now();
+      const reqObj = {
+        id: newId,
+        driverId: zalogowanyKierowcaObj.id,
+        driverName: zalogowanyKierowcaObj.name,
+        typ: finalTyp,
+        tresc,
+        czas: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      await set(ref(db, `prosby/${newId}`), reqObj);
+
+      document.getElementById('p-powod').value = "";
+      document.getElementById('p-wlasny-temat').value = "";
+      alert("Twoje zgłoszenie zostało wysłane do dyspozytorni!");
+    }
+
+    // PODŁĄCZENIE ZDARZEŃ DO PRZYCISKÓW
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('btn-login-main').onclick = zalogujDoSystemu;
       document.getElementById('btn-logout').onclick = wyloguj;
       document.getElementById('btn-toggle-sidebar').onclick = toggleSidebar;
 
-      // Dyspozytor
-      document.getElementById('btn-create-line').onclick = () => otworzEdytorLinii(null);
+      // DYSPOZYTOR
       document.getElementById('btn-open-stops-db').onclick = otworzBazePrzystankow;
-      document.getElementById('btn-add-stop-global').onclick = dodajPrzystanekDoBazyGlobalnie;
       document.getElementById('btn-close-stops-db').onclick = () => zamknijModal('modal-baza-p');
-
-      document.getElementById('btn-add-stop-to-line-editor').onclick = dodajPrzystanekDoLiniiEdycja;
-      document.getElementById('btn-save-line-edit').onclick = zapiszEdycjeLinii;
+      document.getElementById('btn-add-stop-global').onclick = dodajPrzystanekDoBazyGlobalnie;
+      
+      document.getElementById('btn-create-line').onclick = () => otworzEdytorLinii(null);
       document.getElementById('btn-cancel-line-edit').onclick = () => zamknijModal('modal-linia');
+      document.getElementById('btn-save-line-edit').onclick = zapiszEdycjeLinii;
+
+      document.getElementById('btn-add-p-ab').onclick = dodajPrzystanekAB;
+      document.getElementById('btn-add-p-ba').onclick = dodajPrzystanekBA;
 
       document.getElementById('btn-add-driver').onclick = dodajKierowce;
       document.getElementById('btn-apply-penalty').onclick = addPunishmentDriver;
       document.getElementById('btn-break-5').onclick = () => setDriverBreak(5);
       document.getElementById('btn-break-10').onclick = () => setDriverBreak(10);
 
-      document.getElementById('btn-save-schedule').onclick = zapiszGrafikDlaKierowcy;
       document.getElementById('select-grafik-kierowca').onchange = generujKalendarzGrafikaDyspozytora;
+      document.getElementById('btn-save-schedule').onclick = zapiszGrafik;
+      document.getElementById('btn-send-dispatcher-msg').onclick = sendDispatcherMessage;
 
-      // Ukrywanie pól dla wolnego/urlopu
-      document.getElementById('g-select-linia').onchange = (e) => {
-        const val = e.target.value;
-        const details = document.getElementById('g-shift-details');
-        if (val === "Dzień wolny" || val === "Urlop") {
-          details.style.display = 'none';
-        } else {
-          details.style.display = 'block';
-        }
+      const selectTypGrafik = document.getElementById('g-select-typ');
+      if (selectTypGrafik) {
+        selectTypGrafik.onchange = (e) => {
+          const details = document.getElementById('section-grafik-linia-details');
+          if (e.target.value === 'linia') details.style.display = 'block';
+          else details.style.display = 'none';
+        };
+      }
+
+      // KIEROWCA
+      document.getElementById('btn-home-start-course').onclick = () => pokazWidok('driver-kurs');
+      document.getElementById('btn-grafik-start-course').onclick = () => pokazWidok('driver-kurs');
+      document.getElementById('btn-start-drive').onclick = startCourseDrive;
+      document.getElementById('btn-next-stop').onclick = nextStopDrive;
+      document.getElementById('btn-next-loop-action').onclick = continueNextLoop;
+
+      document.getElementById('btn-play-announcement').onclick = () => {
+        const val = document.getElementById('quick-announcement-select').value;
+        czytajTekst(val, false);
       };
-
-      document.getElementById('btn-send-dispatcher-msg').onclick = wyslijWiadomoscOdDyspozytora;
-
-      // Kierowca
-      document.getElementById('btn-home-start-course').onclick = zacznijKursDriver;
-      document.getElementById('btn-grafik-start-course').onclick = zacznijKursDriver;
-
-      document.getElementById('btn-start-drive').onclick = zacznijKursDriver;
-      document.getElementById('btn-next-stop').onclick = przejdzDoNastepnegoPrzystanku;
-      document.getElementById('btn-stop-drive').onclick = zatrzymajKursDriver;
-      document.getElementById('btn-stand-drive').onclick = przełączPostojDriver;
-      document.getElementById('btn-play-announcement').onclick = wygłosZapowiedz;
 
       document.getElementById('p-typ').onchange = (e) => {
         const c = document.getElementById('container-wlasny-temat');
-        c.style.display = e.target.value === 'Własny temat' ? 'block' : 'none';
+        if (e.target.value === 'Własny temat') c.style.display = 'block';
+        else c.style.display = 'none';
       };
 
-      document.getElementById('btn-send-driver-request').onclick = wyslijZgloszenieKierowcy;
+      document.getElementById('btn-start-voice').onclick = startVoiceInput;
+      document.getElementById('btn-stop-voice').onclick = stopVoiceInput;
+      document.getElementById('btn-send-driver-request').onclick = sendDriverRequest;
 
-      // Dyktowanie głosowe zgłoszeń
-      let recognition = null;
-      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition();
-        recognition.lang = 'pl-PL';
-        recognition.continuous = true;
-
-        recognition.onresult = (e) => {
-          let text = '';
-          for (let i = e.resultIndex; i < e.results.length; i++) {
-            text += e.results[i][0].transcript;
-          }
-          document.getElementById('p-powod').value += ' ' + text;
-        };
-
-        document.getElementById('btn-start-voice').onclick = () => {
-          recognition.start();
-          document.getElementById('btn-start-voice').style.display = 'none';
-          document.getElementById('btn-stop-voice').style.display = 'inline-flex';
-        };
-
-        document.getElementById('btn-stop-voice').onclick = () => {
-          recognition.stop();
-          document.getElementById('btn-start-voice').style.display = 'inline-flex';
-          document.getElementById('btn-stop-voice').style.display = 'none';
-        };
-      }
+      initSpeechRecognition();
     });
   </script>
 </body>
