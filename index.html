@@ -34,17 +34,15 @@
 
     .app-viewport { display: flex; width: 100vw; height: 100dvh; position: relative; overflow: hidden; }
 
-    /* EKRAN LOGOWANIA */
     #login-screen {
       position: fixed; inset: 0; background: #000; z-index: 2000;
       display: flex; justify-content: center; align-items: center; padding: 20px;
     }
 
     .login-container {
-      width: 100%; max-width: 420px;
-      background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(25px);
-      border: 1px solid rgba(138, 28, 36, 0.4); border-radius: 28px;
-      padding: 36px 28px; text-align: center;
+      width: 100%; max-width: 420px; background: rgba(18, 18, 18, 0.85);
+      backdrop-filter: blur(25px); border: 1px solid rgba(138, 28, 36, 0.4);
+      border-radius: 28px; padding: 36px 28px; text-align: center;
     }
 
     .brand-title { font-size: 26px; font-weight: 800; color: var(--accent-cream); margin-bottom: 5px; }
@@ -58,76 +56,83 @@
       border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 14px;
       padding: 0 16px; font-size: 14px; font-weight: 600; color: #fff; outline: none;
     }
-
-    select.input-pill { background-color: #1a1a1a; color: #ffffff; }
+    select.input-pill option { background-color: #141414; color: #ffffff; }
 
     .btn-maroon {
-      width: 100%; height: 44px;
-      background: linear-gradient(135deg, #70151c 0%, #3e0b10 100%);
+      width: 100%; height: 44px; background: linear-gradient(135deg, #70151c 0%, #3e0b10 100%);
       border: 1px solid rgba(245, 232, 208, 0.2); border-radius: 14px; color: var(--accent-cream);
       font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 5px;
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .btn-maroon:hover { filter: brightness(1.2); }
 
-    /* APLIKACJA */
-    #main-layout { display: none; width: 100vw; height: 100dvh; position: relative; }
-
-    .toggle-sidebar-btn {
-      position: absolute; top: 12px; left: 12px; z-index: 100;
-      background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff; width: 40px; height: 40px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer;
-    }
+    #main-layout { display: none; width: 100vw; height: 100dvh; position: relative; z-index: 2; }
 
     .sidebar-menu {
-      width: 260px; height: 100%;
-      background: var(--glass-bg); backdrop-filter: blur(35px);
-      border-right: 1px solid var(--glass-border);
-      display: flex; flex-direction: column; justify-content: space-between;
-      padding: 20px 14px; z-index: 10; transition: margin-left 0.3s ease;
+      width: 260px; height: 100%; background: var(--glass-bg); backdrop-filter: blur(35px);
+      border-right: 1px solid var(--glass-border); display: flex; flex-direction: column;
+      justify-content: space-between; padding: 20px 14px; z-index: 10; transition: all 0.3s ease;
     }
     .sidebar-menu.hidden { margin-left: -260px; }
 
     .nav-list { display: flex; flex-direction: column; gap: 6px; margin-top: 40px; }
     .nav-item {
-      padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05);
-      color: #fff; cursor: pointer; font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 14px;
+      color: #fff; font-weight: 600; font-size: 13px; cursor: pointer;
     }
-    .nav-item.active { background: var(--accent-maroon-bright); color: var(--accent-cream); }
+    .nav-item.active {
+      background: linear-gradient(135deg, #70151c 0%, #3e0b10 100%);
+      border: 1px solid rgba(245, 232, 208, 0.25); color: var(--accent-cream);
+    }
 
     .content-area { flex: 1; height: 100%; overflow-y: auto; padding: 60px 20px 20px 20px; }
-
     .view-section { display: none; width: 100%; height: 100%; flex-direction: column; }
     .view-section.active-view { display: flex; }
 
     .glass-card {
-      background: rgba(18, 18, 18, 0.65); border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 18px; padding: 18px; margin-bottom: 12px;
+      background: rgba(18, 18, 18, 0.65); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 18px; margin-bottom: 12px;
     }
 
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; }
     .day-box {
       background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px; padding: 10px; min-height: 50px; cursor: pointer; text-align: center;
+      border-radius: 8px; padding: 6px; min-height: 55px; cursor: pointer;
     }
-    .day-box.selected { border-color: var(--accent-cream); background: rgba(138, 28, 36, 0.4); }
+    .day-box.selected { border-color: var(--accent-cream); background: rgba(138, 28, 36, 0.25); }
+    .day-box.work { border-color: rgba(138, 28, 36, 0.6); background: rgba(92, 18, 24, 0.2); }
+    .day-box.urlop { border-color: #f1c40f; background: rgba(241, 196, 15, 0.15); }
+    .day-box.wolne { border-color: #2ecc71; background: rgba(46, 204, 113, 0.15); }
 
-    /* MODAL */
+    .stops-scroll {
+      flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 10px; overflow-y: auto;
+    }
+    .stop-row {
+      padding: 10px 14px; background: rgba(255,255,255,0.03); border-radius: 10px;
+      margin-bottom: 6px; border-left: 4px solid #444; display: flex; justify-content: space-between;
+    }
+    .stop-row.active { border-left-color: var(--accent-cream); background: rgba(138, 28, 36, 0.25); }
+    .stop-row.passed { border-left-color: #3b7a46; opacity: 0.45; }
+
+    .toggle-sidebar-btn {
+      position: absolute; top: 12px; left: 12px; z-index: 100;
+      background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff; width: 40px; height: 40px; border-radius: 12px; cursor: pointer;
+    }
+
     .modal-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
       z-index: 1000; justify-content: center; align-items: center; padding: 15px;
     }
-    .modal-overlay.active { display: flex; }
     .modal-box {
-      width: 100%; max-width: 500px; background: #121212; border: 1px solid rgba(138, 28, 36, 0.5);
-      border-radius: 20px; padding: 22px;
+      width: 100%; max-width: 650px; background: #121212; border: 1px solid rgba(138, 28, 36, 0.5);
+      border-radius: 20px; padding: 22px; max-height: 90vh; overflow-y: auto;
     }
   </style>
 </head>
 <body>
 
-  <!-- EKRAN LOGOWANIA -->
+  <!-- LOGOWANIE -->
   <div id="login-screen">
     <div class="login-container">
       <div class="brand-title">MPK DROBIN</div>
@@ -135,16 +140,16 @@
 
       <div class="form-group">
         <label>Użytkownik / Login</label>
-        <input type="text" id="l-user" class="input-pill" value="Bartosz">
+        <input type="text" id="l-user" class="input-pill" value="Bartosz" placeholder="Login dyspozytora lub kierowcy">
       </div>
 
       <div class="form-group">
         <label>Hasło Dostępowe</label>
-        <input type="password" id="l-pass" class="input-pill" value="bartosz2011!@#">
+        <input type="password" id="l-pass" class="input-pill" value="bartosz2011!@#" placeholder="Wpisz hasło">
       </div>
 
       <button class="btn-maroon" id="btn-login-main">Zaloguj się do Systemu ➔</button>
-      <p id="login-err" style="color: #ff6b6b; font-size: 12px; margin-top: 8px; display: none;">Nieprawidłowe hasło!</p>
+      <p id="login-err" style="color: #ff6b6b; font-size: 12px; margin-top: 8px; display: none;"></p>
     </div>
   </div>
 
@@ -152,122 +157,392 @@
   <div id="main-layout" class="app-viewport">
     <button class="toggle-sidebar-btn" id="btn-toggle-sidebar">☰</button>
 
-    <!-- SIDEBAR -->
     <div class="sidebar-menu" id="sidebar">
       <div>
-        <div style="font-size: 16px; font-weight: 800; color: var(--accent-cream); text-align: center; margin-top: 5px;">
-          👨‍💻 PANELS SYSTEMU
-        </div>
-        <div class="nav-list">
-          <div class="nav-item active" data-target="view-disp-linie">🚌 Zarządzanie Liniami</div>
-          <div class="nav-item" data-target="view-disp-grafik">📅 Grafik Kierowców</div>
-        </div>
+        <div id="sidebar-role-title" style="font-size: 16px; font-weight: 800; color: var(--accent-cream); text-align: center;">👨‍💻 DYSPOZYTORNIA</div>
+        <div class="nav-list" id="sidebar-nav-container"></div>
       </div>
-
-      <div style="text-align: center; font-size: 11px; color: var(--text-dim);">
-        Zalogowano jako: <strong id="logged-user-label" style="color: #fff;">Bartosz</strong><br>
-        <span style="cursor: pointer; color: #ff6b6b; margin-top: 6px; display: inline-block;" id="btn-logout">Wyloguj się</span>
+      <div style="padding: 8px; text-align: center; font-size: 11px; color: var(--text-dim);">
+        Zalogowano: <strong id="logged-user-label" style="color: #fff;">-</strong><br>
+        <span style="cursor: pointer; color: var(--accent-cream-dim);" id="btn-logout">Wyloguj</span>
       </div>
     </div>
 
-    <!-- CONTENT AREA -->
     <div class="content-area">
-
-      <!-- WIDOK: LINIE -->
-      <div id="view-disp-linie" class="view-section active-view">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-          <h2>Aktywne Linie</h2>
+      <!-- WIDOK: DYSPOZYTOR BAZA PRZYSTANKÓW -->
+      <div id="view-disp-linie" class="view-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h2>Panel Dyspozytora - Przystanki</h2>
           <button class="btn-maroon" style="width: auto; padding: 0 14px;" id="btn-open-stops-db">🚏 Baza Przystanków</button>
         </div>
         <div class="glass-card">
-          <p>Brak aktywnych linii do wyświetlenia.</p>
+          <h3>Stan Bazy Przystanków w Firebase</h3>
+          <div id="disp-stops-preview-list" style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px;"></div>
         </div>
       </div>
 
-      <!-- WIDOK: GRAFIK -->
+      <!-- WIDOK: GRAFIK DYSPOZYTORA (Z URLOPEM / WOLNYM) -->
       <div id="view-disp-grafik" class="view-section">
-        <h2>Grafik Służb</h2>
-        <div class="glass-card" style="margin-top: 15px;">
-          <div id="wybrany-dzien-label" style="font-weight: bold; margin-bottom: 10px;">Wybierz dzień z kalendarza:</div>
-          <div class="calendar-grid" id="disp-cal-grid"></div>
+        <h2>Zarządzanie Grafikiem Kierowców</h2>
+        <div style="display: flex; gap: 15px; margin-top: 10px;">
+          <div class="glass-card" style="flex: 1;">
+            <div class="form-group" style="width: 220px;">
+              <label>Wybierz Kierowcę:</label>
+              <select id="select-grafik-kierowca" class="input-pill"></select>
+            </div>
+            <div class="calendar-grid" id="disp-cal-grid"></div>
+          </div>
+
+          <div class="glass-card" style="width: 300px;">
+            <h3 style="color: var(--accent-cream);">Przydziel Służbę / Wolne</h3>
+            <div id="wybrany-dzien-label" style="font-size: 12px; font-weight: 700; margin-bottom: 10px;">Dzień: Brak</div>
+
+            <div class="form-group">
+              <label>Typ Przydziału / Linia</label>
+              <select id="g-select-linia" class="input-pill">
+                <option value="Linia 161">Linia 161 (Rondo <-> Zakładowa)</option>
+                <option value="Linia 169">Linia 169 (Rondo <-> Pasaż Drobiński)</option>
+                <option value="Linia 175">Linia 175 (Dworzec <-> Rondo)</option>
+                <option value="Linia 156">Linia 156 (Pasaż <-> Zakładowa)</option>
+                <option value="Linia 181">Linia 181 (Park Logistyczny <-> Rondo)</option>
+                <option value="URLOP">🏖️ URLOP</option>
+                <option value="WOLNE">🟢 WOLNE</option>
+              </select>
+            </div>
+
+            <div id="shift-details-box">
+              <div class="form-group">
+                <label>Liczba Kółek</label>
+                <input type="number" id="g-koolka" class="input-pill" value="5" min="1">
+              </div>
+            </div>
+
+            <button class="btn-maroon" id="btn-save-schedule">Zapisz Służbę w Firebase 💾</button>
+          </div>
         </div>
       </div>
 
+      <!-- WIDOK KURSU KIEROWCY (Z AUTOMATYCZNĄ ZMIANĄ KIERUNKÓW) -->
+      <div id="view-driver-kurs" class="view-section">
+        <div class="glass-card" style="height: 100%; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div>
+              <span style="color: var(--accent-cream-dim); font-size: 11px; font-weight: 700;">
+                AKTYWNA LINIA: <span id="active-line-name">Linia 169</span> (KÓŁKO <span id="current-loop-num">1</span>/<span id="max-loops-num">5</span>)
+              </span>
+              <h2 style="font-size: 18px; color: #fff;" id="active-route-title">Rondo Legionów Polskich ➔ Pasaż Drobiński</h2>
+            </div>
+            <div style="text-align: right;">
+              <span style="color: var(--text-dim); font-size: 11px; font-weight: 700;">KIERUNEK</span>
+              <div style="font-size: 16px; font-weight: 800; color: var(--accent-cream);" id="current-dir-label">Tam</div>
+            </div>
+          </div>
+
+          <div class="stops-scroll" id="stops-list"></div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+            <button id="btn-next-stop" class="btn-maroon">NASTĘPNY PRZYSTANEK ✓</button>
+            <button id="btn-reverse-loop" class="btn-maroon" style="background: #222;">ZMIEŃ KIERUNEK (OBRÓT) 🔄</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- MODAL BAZY PRZYSTANKÓW -->
+  <!-- MODAL: BAZA PRZYSTANKÓW -->
   <div class="modal-overlay" id="modal-baza-p">
     <div class="modal-box">
-      <h3 style="color: var(--accent-cream); margin-bottom: 10px;">Baza Przystanków</h3>
-      <p style="font-size: 13px; color: #ccc;">Lista przystanków załadowana poprawnie.</p>
-      <button class="btn-maroon" style="margin-top: 20px;" id="btn-close-stops-db">Zamknij</button>
+      <h2 style="color: var(--accent-cream); margin-bottom: 15px;">Zarządzanie Bazą Przystanków</h2>
+      <div class="form-group">
+        <label>Nazwa Przystanku</label>
+        <input type="text" id="bp-nazwa" class="input-pill" placeholder="np. Dworzec Autobusowy">
+      </div>
+      <div class="form-group">
+        <label>Zapowiedź Głosowa</label>
+        <input type="text" id="bp-mowiona" class="input-pill" placeholder="np. Dworzec Autobusowy Pętla">
+      </div>
+      <button class="btn-maroon" id="btn-add-stop-global">+ Dodaj do Firebase</button>
+
+      <h4 style="margin-top: 15px; margin-bottom: 8px;">Przystanki w bazie:</h4>
+      <div id="baza-przystankow-lista" style="max-height: 200px; overflow-y: auto;"></div>
+      <button class="btn-maroon" style="margin-top: 15px; background: #333;" id="btn-close-stops-db">Zamknij</button>
     </div>
   </div>
 
-  <script>
-    // --- OBSŁUGA INTERFEJSU I PRZYCISKÓW ---
+  <!-- FIREBASE ENGINE INTERFACE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // 1. Logowanie
-    document.getElementById('btn-login-main').addEventListener('click', () => {
-      const pass = document.getElementById('l-pass').value;
-      if (pass === 'bartosz2011!@#') {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('main-layout').style.display = 'flex';
-        generujKalendarz();
-      } else {
-        document.getElementById('login-err').style.display = 'block';
+    const firebaseConfig = {
+      apiKey: "AIzaSyDlkKWLR06aHccoBBTBAnANFkLv7ewudiI",
+      authDomain: "drobinmpk.firebaseapp.com",
+      databaseURL: "https://drobinmpk-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "drobinmpk",
+      storageBucket: "drobinmpk.firebasestorage.app",
+      messagingSenderId: "921596374960",
+      appId: "1:921596374960:web:cb2d647540722114f5b075"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // BAZA DANYCH LINII (TRASY W OBU KIERUNKACH)
+    const BAZA_LINII_KIERUNKI = {
+      "Linia 161": {
+        tam: ["Zakładowa MPK", "Plac Wolności", "Reja", "Brzechwy", "Na bruku", "Sukiennicza", "Kamienna n/ż", "Rondo Legionów Polskich"],
+        powrot: ["Rondo Legionów Polskich", "Kamienna n/ż", "Sukiennicza", "Na bruku", "Brzechwy", "Reja", "Plac Wolności", "Zakładowa MPK"]
+      },
+      "Linia 169": {
+        tam: ["Rondo Legionów Polskich", "Kamienna n/ż", "Sukiennicza", "Reja", "Aleja Lipowa", "Pasaż Drobiński"],
+        powrot: ["Pasaż Drobiński", "Aleja Lipowa", "Reja", "Sukiennicza", "Kamienna n/ż", "Rondo Legionów Polskich"]
+      },
+      "Linia 175": {
+        tam: ["Dworzec Autobusowy", "Lazurowa", "Wąwozowa", "Brzechwy", "Na bruku", "Sukiennicza", "Kamienna n/ż", "Rondo Legionów Polskich"],
+        powrot: ["Rondo Legionów Polskich", "Kamienna n/ż", "Sukiennicza", "Na bruku", "Brzechwy", "Wąwozowa", "Lazurowa", "Dworzec Autobusowy"]
+      },
+      "Linia 156": {
+        tam: ["Zakładowa MPK", "Osiedlowa", "Wiślana", "Szybowa n/ż", "Most nad Świdrem", "Floriańska Działki", "Aleja Lipowa", "Pasaż Drobiński"],
+        powrot: ["Pasaż Drobiński", "Aleja Lipowa", "Floriańska Działki", "Most nad Świdrem", "Szybowa n/ż", "Wiślana", "Osiedlowa", "Zakładowa MPK"]
+      },
+      "Linia 181": {
+        tam: ["Park Logistyczny", "Elektryczna", "Piaseczna", "Bażyńskiego", "Plac Wolności", "Reja", "Sukiennicza", "Kamienna n/ż", "Rondo Legionów Polskich"],
+        powrot: ["Rondo Legionów Polskich", "Kamienna n/ż", "Sukiennicza", "Reja", "Plac Wolności", "Bażyńskiego", "Piaseczna", "Elektryczna", "Park Logistyczny"]
       }
+    };
+
+    let dyspozytorzyBaza = {};
+    let przystankiBaza = [];
+    let grafikBaza = {};
+    let zalogowanaRola = null;
+    let wybraneDzienGrafik = null;
+    let currentLoopIndex = 1;
+    let totalLoops = 5;
+    let isReturnDirection = false;
+    let currentStopIdx = 0;
+    let activeLineKey = "Linia 169";
+
+    // INITIALIZATION & REALTIME LISTENERS
+    onValue(ref(db, 'dyspozytorzy'), (snapshot) => {
+      dyspozytorzyBaza = snapshot.val() || { "Bartosz": "bartosz2011!@#" };
     });
 
-    // 2. Wylogowanie
-    document.getElementById('btn-logout').addEventListener('click', () => {
-      document.getElementById('main-layout').style.display = 'none';
-      document.getElementById('login-screen').style.display = 'flex';
+    onValue(ref(db, 'przystanki'), (snapshot) => {
+      const val = snapshot.val();
+      przystankiBaza = val ? Object.values(val) : [];
+      renderBazaPrzystankow();
     });
 
-    // 3. Zwijanie / Rozwijanie menu bocznego
-    document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
-      document.getElementById('sidebar').classList.toggle('hidden');
+    onValue(ref(db, 'grafik'), (snapshot) => {
+      grafikBaza = snapshot.val() || {};
+      renderDispCalendar();
     });
 
-    // 4. Nawigacja między widokami
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.addEventListener('click', (e) => {
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active-view'));
+    // LOGOWANIE SYSTEMOWE
+    document.getElementById('btn-login-main').onclick = async () => {
+      const user = document.getElementById('l-user').value.trim();
+      const pass = document.getElementById('l-pass').value.trim();
+      const errBox = document.getElementById('login-err');
 
-        e.target.classList.add('active');
-        const targetId = e.target.getAttribute('data-target');
-        document.getElementById(targetId).classList.add('active-view');
-      });
-    });
+      if (dyspozytorzyBaza[user] && dyspozytorzyBaza[user] === pass) {
+        zalogowanaRola = 'disp';
+        uruchomSystem("Bartosz (Dyspozytor)");
+        return;
+      }
 
-    // 5. Otwieranie i zamykanie modalu
-    document.getElementById('btn-open-stops-db').addEventListener('click', () => {
-      document.getElementById('modal-baza-p').classList.add('active');
-    });
+      try {
+        await signInWithEmailAndPassword(auth, `${user.toLowerCase()}@mpkdrobin.pl`, pass);
+        zalogowanaRola = 'driver';
+        uruchomSystem(user);
+      } catch (err) {
+        errBox.innerText = "Nieprawidłowy login lub hasło w bazie!";
+        errBox.style.display = 'block';
+      }
+    };
 
-    document.getElementById('btn-close-stops-db').addEventListener('click', () => {
-      document.getElementById('modal-baza-p').classList.remove('active');
-    });
+    function uruchomSystem(userName) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-layout').style.display = 'flex';
+      document.getElementById('logged-user-label').innerText = userName;
 
-    // 6. Generowanie dni w kalendarzu
-    function generujKalendarz() {
-      const grid = document.getElementById('disp-cal-grid');
-      grid.innerHTML = '';
-      for (let i = 1; i <= 14; i++) {
-        const day = document.createElement('div');
-        day.className = 'day-box';
-        day.innerText = `Dzień ${i}`;
-        day.addEventListener('click', () => {
-          document.querySelectorAll('.day-box').forEach(d => d.classList.remove('selected'));
-          day.classList.add('selected');
-          document.getElementById('wybrany-dzien-label').innerText = `Wybrano: Dzień ${i}`;
-        });
-        grid.appendChild(day);
+      const navBox = document.getElementById('sidebar-nav-container');
+      navBox.innerHTML = "";
+
+      if (zalogowanaRola === 'disp') {
+        document.getElementById('sidebar-role-title').innerText = "👨‍💻 DYSPOZYTORNIA";
+        navBox.innerHTML = `
+          <div class="nav-item active" id="nav-disp-linie"><span>🚏</span> Przystanki MPK</div>
+          <div class="nav-item" id="nav-disp-grafik"><span>📅</span> Grafik Służb</div>
+        `;
+        document.getElementById('nav-disp-linie').onclick = () => pokazWidok('disp-linie');
+        document.getElementById('nav-disp-grafik').onclick = () => pokazWidok('disp-grafik');
+        pokazWidok('disp-linie');
+      } else {
+        document.getElementById('sidebar-role-title').innerText = "🚌 PANEL KIEROWCY";
+        navBox.innerHTML = `<div class="nav-item active" id="nav-driver-kurs"><span>🚌</span> Mój Kurs</div>`;
+        document.getElementById('nav-driver-kurs').onclick = () => pokazWidok('driver-kurs');
+        pokazWidok('driver-kurs');
+        renderRouteStops();
       }
     }
+
+    document.getElementById('btn-logout').onclick = () => {
+      signOut(auth);
+      location.reload();
+    };
+
+    function pokazWidok(viewName) {
+      document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active-view'));
+      const vElem = document.getElementById(`view-${viewName}`);
+      if (vElem) vElem.classList.add('active-view');
+    }
+
+    // PRZYSTANKI BAZA FIREBASE
+    document.getElementById('btn-open-stops-db').onclick = () => {
+      document.getElementById('modal-baza-p').style.display = 'flex';
+    };
+    document.getElementById('btn-close-stops-db').onclick = () => {
+      document.getElementById('modal-baza-p').style.display = 'none';
+    };
+
+    document.getElementById('btn-add-stop-global').onclick = async () => {
+      const nazwa = document.getElementById('bp-nazwa').value.trim();
+      const mowiona = document.getElementById('bp-mowiona').value.trim();
+      if (!nazwa) return alert("Podaj nazwę!");
+
+      const newId = Date.now();
+      await set(ref(db, `przystanki/${newId}`), { id: newId, nazwa, mowiona: mowiona || nazwa });
+      document.getElementById('bp-nazwa').value = "";
+      document.getElementById('bp-mowiona').value = "";
+    };
+
+    function renderBazaPrzystankow() {
+      const boxModal = document.getElementById('baza-przystankow-lista');
+      const boxPreview = document.getElementById('disp-stops-preview-list');
+      if (boxModal) boxModal.innerHTML = "";
+      if (boxPreview) boxPreview.innerHTML = "";
+
+      przystankiBaza.forEach(p => {
+        if (boxModal) {
+          boxModal.innerHTML += `
+            <div style="display:flex; justify-content:space-between; padding:6px; border-bottom:1px solid #333;">
+              <span>${p.nazwa}</span>
+              <button onclick="removeStop(${p.id})" style="background:none; border:none; color:red; cursor:pointer;">🗑️</button>
+            </div>`;
+        }
+        if (boxPreview) {
+          boxPreview.innerHTML += `<div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:8px;">🚏 <strong>${p.nazwa}</strong> (Zapowiedź: "${p.mowiona}")</div>`;
+        }
+      });
+    }
+
+    window.removeStop = async (id) => {
+      await remove(ref(db, `przystanki/${id}`));
+    };
+
+    // LOGIKA GRAFIKA (URLOP / WOLNE)
+    function renderDispCalendar() {
+      const grid = document.getElementById('disp-cal-grid');
+      if (!grid) return;
+      grid.innerHTML = "";
+
+      for (let i = 1; i <= 31; i++) {
+        const key = `2026_08_${i}`;
+        const shift = grafikBaza[key];
+        
+        let typeClass = "";
+        let text = i;
+        if (shift) {
+          if (shift.linia === "URLOP") { typeClass = "urlop"; text += " 🏖️"; }
+          else if (shift.linia === "WOLNE") { typeClass = "wolne"; text += " 🟢"; }
+          else { typeClass = "work"; text += ` 🚌`; }
+        }
+
+        const dayBox = document.createElement('div');
+        dayBox.className = `day-box ${typeClass}`;
+        dayBox.innerText = text;
+        dayBox.onclick = () => selectDay(i, key);
+        grid.appendChild(dayBox);
+      }
+    }
+
+    function selectDay(dayNum, key) {
+      wybraneDzienGrafik = key;
+      document.getElementById('wybrany-dzien-label').innerText = `Wybrany Dzień: ${dayNum} Sierpnia`;
+    }
+
+    document.getElementById('btn-save-schedule').onclick = async () => {
+      if (!wybraneDzienGrafik) return alert("Wybierz dzień z kalendarza!");
+      const typ = document.getElementById('g-select-linia').value;
+      const koolka = parseInt(document.getElementById('g-koolka').value) || 1;
+
+      await set(ref(db, `grafik/${wybraneDzienGrafik}`), {
+        linia: typ,
+        koleka: koolka
+      });
+
+      alert("Zapisano status służby w Firebase!");
+    };
+
+    // LOGIKA KURSU I AUTOMATYCZNEJ ZMIANY KIERUNKU
+    function renderRouteStops() {
+      const container = document.getElementById('stops-list');
+      container.innerHTML = "";
+
+      const currentLineData = BAZA_LINII_KIERUNKI[activeLineKey];
+      const activeStopsArr = isReturnDirection ? currentLineData.powrot : currentLineData.tam;
+
+      document.getElementById('current-dir-label').innerText = isReturnDirection ? "Powrót" : "Tam";
+      document.getElementById('active-route-title').innerText = `${activeStopsArr[0]} ➔ ${activeStopsArr[activeStopsArr.length - 1]}`;
+
+      activeStopsArr.forEach((stopName, idx) => {
+        const row = document.createElement('div');
+        let statusClass = "";
+        if (idx < currentStopIdx) statusClass = "passed";
+        if (idx === currentStopIdx) statusClass = "active";
+
+        row.className = `stop-row ${statusClass}`;
+        row.innerHTML = `<div><strong>${idx + 1}. ${stopName}</strong></div><div>${idx === currentStopIdx ? '⬅️ OBECNY' : ''}</div>`;
+        container.appendChild(row);
+      });
+    }
+
+    document.getElementById('btn-next-stop').onclick = () => {
+      const currentLineData = BAZA_LINII_KIERUNKI[activeLineKey];
+      const activeStopsArr = isReturnDirection ? currentLineData.powrot : currentLineData.tam;
+
+      if (currentStopIdx < activeStopsArr.length - 1) {
+        currentStopIdx++;
+      } else {
+        // OSIĄGNIĘTO PĘTLĘ KOŃCOWĄ - AUTOMATYCZNY OBRÓT KIERUNKU I PRZEJŚCIE DO KOLEJNEGO KÓŁKA
+        alert(`Osiągnięto pętlę końcową: ${activeStopsArr[currentStopIdx]}. Następuje automatyczna zmiana kierunku na przeciwny!`);
+        isReturnDirection = !isReturnDirection;
+        currentStopIdx = 0;
+        
+        if (isReturnDirection) {
+          // Powrót zaliczamy po tam i z powrotem jako pełne kółko
+          currentLoopIndex++;
+          if (currentLoopIndex > totalLoops) {
+            alert("Ukończono wszystkie zaplanowane kółka na dzisiaj!");
+            currentLoopIndex = totalLoops;
+          }
+        }
+        document.getElementById('current-loop-num').innerText = currentLoopIndex;
+      }
+      renderRouteStops();
+    };
+
+    document.getElementById('btn-reverse-loop').onclick = () => {
+      isReturnDirection = !isReturnDirection;
+      currentStopIdx = 0;
+      renderRouteStops();
+    };
+
+    document.getElementById('btn-toggle-sidebar').onclick = () => {
+      document.getElementById('sidebar').classList.toggle('hidden');
+    };
   </script>
 </body>
 </html>
