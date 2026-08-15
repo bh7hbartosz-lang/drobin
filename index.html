@@ -447,12 +447,12 @@
 
               <div class="form-group" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
                 <label>Przerwa Po Którym Kółku?</label>
-                <input type="number" id="g-przerwa-po-kolku" class="input-pill" value="2" min="1" max="15">
+                <input type="number" id="g-przerwa-po-kolku" class="input-pill" value="1" min="1" max="15">
               </div>
 
               <div class="form-group">
                 <label>Czas Przerwy (Minuty)</label>
-                <input type="number" id="g-przerwa-czas" class="input-pill" value="15" min="5" max="60" step="5">
+                <input type="number" id="g-przerwa-czas" class="input-pill" value="5" min="1" max="60" step="1">
               </div>
             </div>
 
@@ -511,7 +511,7 @@
           <div class="glass-card">
             <div style="font-size: 11px; color: var(--text-dim);">STATUS SŁUŻBY</div>
             <div style="font-size: 22px; font-weight: 800; color: var(--accent-cream); margin-top: 2px;" id="driver-status-text">Gotowy</div>
-            <button class="btn-maroon btn-drive-start" style="margin-top: 8px;" id="btn-home-start-course">Rozpocznij Kurs (WYJ) ➔</button>
+            <button class="btn-maroon btn-drive-start" style="margin-top: 8px;" id="btn-home-start-course">Rozpocznij Kurs ➔</button>
           </div>
         </div>
 
@@ -525,7 +525,7 @@
         <div class="glass-card" style="height: 100%; display: flex; flex-direction: column;">
           <div class="card-title-bar">
             <h2>Miesięczny Grafik Służb</h2>
-            <button class="btn-maroon btn-drive-start" style="width: auto; padding: 0 16px;" id="btn-grafik-start-course">▶ Rozpocznij Kurs (WYJ)</button>
+            <button class="btn-maroon btn-drive-start" style="width: auto; padding: 0 16px;" id="btn-grafik-start-course">▶ Rozpocznij Kurs</button>
           </div>
           <div class="calendar-grid" id="driver-cal-grid" style="flex: 1;"></div>
         </div>
@@ -544,14 +544,14 @@
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;">
             <div>
               <span style="color: var(--accent-cream-dim); font-size: 11px; font-weight: 700;">
-                AKTYWNA LINIA: <span id="active-line-name">WYJ</span> (KÓŁKO <span id="current-loop-num">1</span>/<span id="max-loops-num">5</span>) 
+                AKTYWNA LINIA: <span id="active-line-name">---</span> (KÓŁKO <span id="current-loop-num">1</span>/<span id="max-loops-num">5</span>) 
                 <span id="active-penalty-tag"></span>
               </span>
-              <h2 style="font-size: 18px; color: #fff;" id="active-route-title">WYJAZD NA LINIĘ</h2>
+              <h2 style="font-size: 18px; color: #fff;" id="active-route-title">---</h2>
             </div>
             <div style="text-align: right;">
-              <span style="color: var(--text-dim); font-size: 11px; font-weight: 700;" id="timer-label">WYJAZD NA LINIĘ</span>
-              <div style="font-size: 26px; font-weight: 800; color: var(--accent-cream); font-family: monospace; line-height:1;" id="timer">--:--</div>
+              <span style="color: var(--text-dim); font-size: 11px; font-weight: 700;" id="timer-label">CZAS PRZERWY</span>
+              <div style="font-size: 26px; font-weight: 800; color: var(--accent-cream); font-family: monospace; line-height:1;" id="timer">00:00</div>
             </div>
           </div>
 
@@ -635,7 +635,7 @@
     </div>
   </div>
 
-  <!-- MODAL: EDYCJA / TWORZENIE LINII (OBOK SIEBIE KIERUNKI A->B ORAZ B->A) -->
+  <!-- MODAL: EDYCJA / TWORZENIE LINII -->
   <div class="modal-overlay" id="modal-linia">
     <div class="modal-box">
       <h2 style="color: var(--accent-cream); margin-bottom: 15px;" id="modal-title">Kreator i Edytor Linii</h2>
@@ -645,7 +645,6 @@
         <input type="text" id="m-l-numer" class="input-pill" placeholder="np. Linia 161">
       </div>
 
-      <!-- KONTENER KIERUNKÓW A->B I B->A OBOK SIEBIE -->
       <div class="direction-container">
         <!-- KIERUNEK A -> B -->
         <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -732,14 +731,11 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // SYSTEM ZMIENNYCH LOKALNYCH
     let zalogowanaRola = null;
     let zalogowanyKierowcaObj = null;
     let clockInterval = null;
     let timerInterval = null;
-    let boardingInterval = null;
-    let announcementTimeout = null;
-    let isStopAnnouncementPlaying = false; 
+    let breakCountdownTimer = null;
 
     let selectedDayForGrafik = null;
 
@@ -754,15 +750,11 @@
       "Bartosz": "bartosz2011!@#"
     };
 
-    // NASŁUCHIWANIE BAZY FIREBASE W CZASIE RZECZYWISTYM
     function initializeRealtimeListeners() {
       onValue(ref(db, 'dyspozytorzy'), (snapshot) => {
         const val = snapshot.val();
-        if (val) {
-          dyspozytorzyBaza = val;
-        } else {
-          set(ref(db, 'dyspozytorzy/Bartosz'), "bartosz2011!@#");
-        }
+        if (val) dyspozytorzyBaza = val;
+        else set(ref(db, 'dyspozytorzy/Bartosz'), "bartosz2011!@#");
       });
 
       onValue(ref(db, 'przystanki'), (snapshot) => {
@@ -781,6 +773,7 @@
           renderGlowneLinie();
           uaktualnijSelectyLinii();
         }
+        if (zalogowanaRola === 'driver') renderStopsKierowcy();
       });
 
       onValue(ref(db, 'kierowcy'), (snapshot) => {
@@ -790,10 +783,10 @@
           const fresh = kierowcyBaza.find(k => k.id === zalogowanyKierowcaObj.id);
           if (fresh) zalogowanyKierowcaObj = fresh;
         }
-        if (zalogowanaRola === 'disp') {
-          renderKierowcy();
-        } else if (zalogowanaRola === 'driver') {
+        if (zalogowanaRola === 'disp') renderKierowcy();
+        else if (zalogowanaRola === 'driver') {
           odswiezDaneKierowcyHome();
+          renderStopsKierowcy();
         }
       });
 
@@ -815,35 +808,24 @@
       });
     }
 
-    // AUDIO SPEECH SYNTHESIS
     let availableVoices = [];
     function loadVoices() {
-      if ('speechSynthesis' in window) {
-        availableVoices = window.speechSynthesis.getVoices();
-      }
+      if ('speechSynthesis' in window) availableVoices = window.speechSynthesis.getVoices();
     }
     if ('speechSynthesis' in window) {
       window.speechSynthesis.onvoiceschanged = loadVoices;
       loadVoices();
     }
 
-    function czytajTekst(tekst, isOfficial = false) {
+    function czytajTekst(tekst) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(tekst);
         msg.lang = 'pl-PL';
-        
         if (availableVoices.length > 0) {
           const plVoice = availableVoices.find(v => v.lang.includes('pl'));
           if (plVoice) msg.voice = plVoice;
         }
-
-        if (isOfficial) isStopAnnouncementPlaying = true;
-
-        msg.onend = () => {
-          if (isOfficial) isStopAnnouncementPlaying = false;
-        };
-
         window.speechSynthesis.speak(msg);
       }
     }
@@ -855,17 +837,13 @@
         const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const timeStr = now.toLocaleTimeString('pl-PL');
         const dateStr = now.toLocaleDateString('pl-PL', optionsDate);
-        
         const elem = document.getElementById('driver-datetime');
-        if (elem) {
-          elem.innerText = `Dzisiaj jest: ${dateStr} | ${timeStr}`;
-        }
+        if (elem) elem.innerText = `Dzisiaj jest: ${dateStr} | ${timeStr}`;
       };
       updateClock();
       clockInterval = setInterval(updateClock, 1000);
     }
 
-    // AUTHENTICATION FIREBASE LOGOWANIE
     async function zalogujDoSystemu() {
       const userVal = document.getElementById('l-user').value.trim();
       const passVal = document.getElementById('l-pass').value.trim();
@@ -874,11 +852,8 @@
 
       errBox.style.display = 'none';
 
-      if (deviceVal === 'mobile') {
-        document.body.classList.add('is-mobile');
-      } else {
-        document.body.classList.remove('is-mobile');
-      }
+      if (deviceVal === 'mobile') document.body.classList.add('is-mobile');
+      else document.body.classList.remove('is-mobile');
 
       const expectedPass = dyspozytorzyBaza[userVal];
       if (expectedPass !== undefined) {
@@ -895,17 +870,11 @@
       }
 
       const emailDomain = userVal.includes('@') ? userVal : `${userVal.toLowerCase()}@mpkdrobin.pl`;
-      
       try {
         await signInWithEmailAndPassword(auth, emailDomain, passVal);
         initializeRealtimeListeners();
-
         setTimeout(() => {
-          const kFound = kierowcyBaza.find(k => 
-            k.login.toLowerCase() === userVal.toLowerCase() || 
-            k.name.toLowerCase() === userVal.toLowerCase()
-          );
-
+          const kFound = kierowcyBaza.find(k => k.login.toLowerCase() === userVal.toLowerCase() || k.name.toLowerCase() === userVal.toLowerCase());
           if (kFound) {
             zalogowanaRola = "driver";
             zalogowanyKierowcaObj = kFound;
@@ -915,7 +884,6 @@
             errBox.style.display = 'block';
           }
         }, 800);
-
       } catch (error) {
         errBox.innerText = "Błąd logowania Firebase: Nieprawidłowy login lub hasło!";
         errBox.style.display = 'block';
@@ -986,10 +954,8 @@
       await signOut(auth);
       document.getElementById('main-layout').style.display = 'none';
       document.getElementById('login-screen').style.display = 'flex';
-      clearInterval(timerInterval);
-      clearInterval(boardingInterval);
       clearInterval(clockInterval);
-      clearTimeout(announcementTimeout);
+      clearInterval(breakCountdownTimer);
     }
 
     function toggleSidebar() {
@@ -1011,7 +977,7 @@
       }
     }
 
-    /* DYSPOZYTOR LOGIKA FIREBASE */
+    /* DYSPOZYTOR FIREBASE */
     function otworzBazePrzystankow() {
       document.getElementById('modal-baza-p').style.display = 'flex';
       renderListaBazyPrzystankow();
@@ -1128,7 +1094,7 @@
     }
 
     function renderPrzystankiWEdytorze() {
-      // RENDER A->B
+      // RENDER A->B (DOKŁADNY CZAS WPISANY BEZ ZAOKRĄGLANIA)
       const listAB = document.getElementById('m-l-przystanki-ab-lista');
       listAB.innerHTML = "";
       tymczasowePrzystankiAB.forEach((p, idx) => {
@@ -1138,16 +1104,16 @@
         item.innerHTML = `
           <span style="font-size: 11px;"><strong>${idx+1}. ${p.nazwa}</strong></span>
           <div style="display: flex; align-items: center; gap: 4px;">
-            <input type="number" value="${p.czas}" class="input-pill inp-time" style="width: 50px; height: 26px; padding: 0 4px; font-size: 11px;">
+            <input type="text" value="${p.czas}" class="input-pill inp-time" style="width: 60px; height: 26px; padding: 0 4px; font-size: 11px;">
             <button style="background: none; border: none; color: var(--accent-cream); cursor: pointer; font-size: 12px;" class="btn-del">🗑️</button>
           </div>
         `;
-        item.querySelector('.inp-time').onchange = (e) => tymczasowePrzystankiAB[idx].czas = parseInt(e.target.value) || 15;
+        item.querySelector('.inp-time').onchange = (e) => tymczasowePrzystankiAB[idx].czas = e.target.value;
         item.querySelector('.btn-del').onclick = () => { tymczasowePrzystankiAB.splice(idx, 1); renderPrzystankiWEdytorze(); };
         listAB.appendChild(item);
       });
 
-      // RENDER B->A
+      // RENDER B->A (DOKŁADNY CZAS WPISANY BEZ ZAOKRĄGLANIA)
       const listBA = document.getElementById('m-l-przystanki-ba-lista');
       listBA.innerHTML = "";
       tymczasowePrzystankiBA.forEach((p, idx) => {
@@ -1157,11 +1123,11 @@
         item.innerHTML = `
           <span style="font-size: 11px;"><strong>${idx+1}. ${p.nazwa}</strong></span>
           <div style="display: flex; align-items: center; gap: 4px;">
-            <input type="number" value="${p.czas}" class="input-pill inp-time" style="width: 50px; height: 26px; padding: 0 4px; font-size: 11px;">
+            <input type="text" value="${p.czas}" class="input-pill inp-time" style="width: 60px; height: 26px; padding: 0 4px; font-size: 11px;">
             <button style="background: none; border: none; color: var(--accent-cream); cursor: pointer; font-size: 12px;" class="btn-del">🗑️</button>
           </div>
         `;
-        item.querySelector('.inp-time').onchange = (e) => tymczasowePrzystankiBA[idx].czas = parseInt(e.target.value) || 15;
+        item.querySelector('.inp-time').onchange = (e) => tymczasowePrzystankiBA[idx].czas = e.target.value;
         item.querySelector('.btn-del').onclick = () => { tymczasowePrzystankiBA.splice(idx, 1); renderPrzystankiWEdytorze(); };
         listBA.appendChild(item);
       });
@@ -1171,7 +1137,7 @@
       const pId = document.getElementById('m-l-dodaj-p-ab-select').value;
       const pObj = przystankiBaza.find(p => p.id == pId);
       if (!pObj) return alert("Wybierz przystanek!");
-      tymczasowePrzystankiAB.push({ id: pObj.id, nazwa: pObj.nazwa, mowiona: pObj.mowiona, czas: 15 });
+      tymczasowePrzystankiAB.push({ id: pObj.id, nazwa: pObj.nazwa, mowiona: pObj.mowiona, czas: "15" });
       renderPrzystankiWEdytorze();
     }
 
@@ -1179,7 +1145,7 @@
       const pId = document.getElementById('m-l-dodaj-p-ba-select').value;
       const pObj = przystankiBaza.find(p => p.id == pId);
       if (!pObj) return alert("Wybierz przystanek!");
-      tymczasowePrzystankiBA.push({ id: pObj.id, nazwa: pObj.nazwa, mowiona: pObj.mowiona, czas: 15 });
+      tymczasowePrzystankiBA.push({ id: pObj.id, nazwa: pObj.nazwa, mowiona: pObj.mowiona, czas: "15" });
       renderPrzystankiWEdytorze();
     }
 
@@ -1239,11 +1205,12 @@
           missedLoops: 0,
           punishmentLoops: 0,
           isOnBreak: false,
-          lastStopTimestamp: 0,
           currentStopIdx: 0,
           currentLoop: 0,
           activeLine: "Linia 161",
-          statusText: "Postój"
+          statusText: "Postój",
+          currentDirection: "AB",
+          breakMinutesRemaining: 0
         };
 
         await set(ref(db, `kierowcy/${newId}`), newK);
@@ -1309,6 +1276,7 @@
       alert(`Nałożono karę dla ${k.name}: +${extra} doliczonych kółek.`);
     }
 
+    // PRZERWA DYSPOZYTORSKA Z ODLICZANIEM I ZMIANĄ KIERUNKU
     async function setDriverBreak(minutes) {
       const kId = parseInt(document.getElementById('disp-action-kierowca-przerwy').value);
       const k = kierowcyBaza.find(x => x.id === kId);
@@ -1317,33 +1285,19 @@
 
       await update(ref(db, `kierowcy/${kId}`), {
         isOnBreak: true,
-        statusText: "Przerwa"
+        statusText: "Przerwa",
+        breakSecondsRemaining: minutes * 60
       });
 
       const notifId = Date.now();
       await set(ref(db, `powiadomienia/${kId}/${notifId}`), {
         id: notifId,
         nadawca: "Dyspozytor (PRZERWA)",
-        tresc: `Nałożono przerwę dyspozytorską na okres ${minutes} minut. Kurs zablokowany.`,
+        tresc: `Nałożono przerwę dyspozytorską na okres ${minutes} minut. Kurs wstrzymany.`,
         czas: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
       });
 
-      alert(`Zarezerwowano przerwę ${minutes} minut dla kierowcy ${k.name}.`);
-
-      setTimeout(async () => {
-        await update(ref(db, `kierowcy/${kId}`), {
-          isOnBreak: false,
-          statusText: "Gotowy"
-        });
-
-        const endNotifId = Date.now();
-        await set(ref(db, `powiadomienia/${kId}/${endNotifId}`), {
-          id: endNotifId,
-          nadawca: "Dyspozytor",
-          tresc: "Twoja przerwa została zakończona. Możesz kontynuować kurs.",
-          czas: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
-        });
-      }, minutes * 1000 * 60);
+      alert(`Ustawiono przerwę ${minutes} min dla kierowcy ${k.name}. Po jej minięciu automatycznie nastąpi zmiana kierunku.`);
     }
 
     function renderKierowcy() {
@@ -1362,7 +1316,8 @@
       kierowcyBaza.forEach(k => {
         if (box) {
           const lObj = linieBaza.find(x => x.numer === k.activeLine) || linieBaza[0];
-          const trasa = lObj ? (lObj.przystankiAB || lObj.przystanki || []) : [];
+          const isBA = k.currentDirection === "BA";
+          const trasa = lObj ? (isBA ? (lObj.przystankiBA || []) : (lObj.przystankiAB || lObj.przystanki || [])) : [];
           const currentStopName = trasa[k.currentStopIdx] ? trasa[k.currentStopIdx].nazwa : "Wyjazd na linię / Zajezdnia";
           const progress = trasa.length > 0 ? Math.round((k.currentStopIdx / trasa.length) * 100) : 0;
           
@@ -1385,11 +1340,11 @@
             </div>
             
             <div style="font-size: 11px; color: #ccc;">
-              📍 Aktywna Linia: <strong>${k.activeLine}</strong> | Kółko: <strong>${k.completedLoops + 1}/${k.assignedLoops}</strong> ${penaltyText}
+              📍 Linia: <strong>${k.isOnBreak ? 'PRZERWA' : k.activeLine}</strong> | Kółko: <strong>${k.completedLoops + 1}/${k.assignedLoops}</strong> ${penaltyText}
             </div>
 
             <div style="font-size: 11px; color: var(--text-dim);">
-              🚏 Obecny przystanek: <strong style="color: #fff;">${currentStopName}</strong>
+              🚏 Przystanek: <strong style="color: #fff;">${k.isOnBreak ? 'Odpoczynek / Przerwa' : currentStopName}</strong>
             </div>
 
             <div class="live-progress-bar">
@@ -1400,7 +1355,7 @@
               <span style="font-size: 10px; color: var(--text-dim);">Kółka: ${k.completedLoops}/${k.assignedLoops}</span>
               <div>
                 <button style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 10px;" class="btn-change-pass">🔑 Hasło</button>
-                <button style="background: none; border: none; color: var(--accent-cream); cursor: pointer; font-size: 10px;" class="btn-del-driver">🗑️ Usun</button>
+                <button style="background: none; border: none; color: var(--accent-cream); cursor: pointer; font-size: 10px;" class="btn-del-driver">🗑️ Usuń</button>
               </div>
             </div>
           `;
@@ -1416,7 +1371,6 @@
       });
     }
 
-    // GRAFIK DYSPOZYTORA Z URLOPEM I WOLNYM
     function generujKalendarzGrafikaDyspozytora() {
       const grid = document.getElementById('disp-cal-grid');
       const kSelect = document.getElementById('select-grafik-kierowca');
@@ -1500,8 +1454,8 @@
       } else {
         const linia = document.getElementById('g-select-linia').value;
         const koolka = parseInt(document.getElementById('g-koolka').value) || 5;
-        const przerwaPo = parseInt(document.getElementById('g-przerwa-po-kolku').value) || 2;
-        const przerwaCzas = parseInt(document.getElementById('g-przerwa-czas').value) || 15;
+        const przerwaPo = parseInt(document.getElementById('g-przerwa-po-kolku').value) || 1;
+        const przerwaCzas = parseInt(document.getElementById('g-przerwa-czas').value) || 5;
 
         const shiftObj = {
           type: 'linia',
@@ -1512,6 +1466,13 @@
         };
 
         await set(ref(db, `grafik/${gKey}`), shiftObj);
+
+        await update(ref(db, `kierowcy/${kId}`), {
+          activeLine: linia,
+          assignedLoops: koolka,
+          breakAfterLoop: przerwaPo,
+          breakDurationMin: przerwaCzas
+        });
 
         const notifId = Date.now();
         await set(ref(db, `powiadomienia/${kId}/${notifId}`), {
@@ -1576,14 +1537,14 @@
       });
     }
 
-    /* KIEROWCA LOGIKA Z FIREBASE */
+    /* KIEROWCA LOGIKA Z AUTOMATYCZNĄ PRZERWĄ I PRZEŁĄCZANIEM KIERUNKU */
     function odswiezDaneKierowcyHome() {
       if (!zalogowanyKierowcaObj) return;
 
       document.getElementById('driver-display-name').innerText = zalogowanyKierowcaObj.name;
-      document.getElementById('driver-today-line').innerText = zalogowanyKierowcaObj.activeLine;
-      document.getElementById('driver-today-loops-goal').innerText = `${zalogowanyKierowcaObj.assignedLoops} kółek`;
-      document.getElementById('driver-completed-loops-val').innerText = zalogowanyKierowcaObj.completedLoops;
+      document.getElementById('driver-today-line').innerText = zalogowanyKierowcaObj.isOnBreak ? "PRZERWA" : zalogowanyKierowcaObj.activeLine;
+      document.getElementById('driver-today-loops-goal').innerText = `${zalogowanyKierowcaObj.assignedLoops || 5} kółek`;
+      document.getElementById('driver-completed-loops-val').innerText = zalogowanyKierowcaObj.completedLoops || 0;
       document.getElementById('driver-status-text').innerText = zalogowanyKierowcaObj.isOnBreak ? "PRZERWA" : zalogowanyKierowcaObj.statusText;
 
       const penaltyTag = document.getElementById('driver-penalty-tag');
@@ -1595,7 +1556,8 @@
 
       const lObj = linieBaza.find(x => x.numer === zalogowanyKierowcaObj.activeLine);
       if (lObj) {
-        document.getElementById('driver-today-dir').innerText = `Trasa: ${lObj.kierunekAB || lObj.kierunek || 'Główna'}`;
+        const dir = zalogowanyKierowcaObj.currentDirection === "BA" ? (lObj.kierunekBA || "Kierunek B -> A") : (lObj.kierunekAB || "Kierunek A -> B");
+        document.getElementById('driver-today-dir').innerText = `Trasa: ${dir}`;
       }
 
       renderDriverHomePowiadomienia();
@@ -1688,6 +1650,7 @@
       }
     }
 
+    // STEROWANIE I WYŚWIETLANIE KURSU
     function renderStopsKierowcy() {
       const box = document.getElementById('stops-list');
       if (!box || !zalogowanyKierowcaObj) return;
@@ -1695,25 +1658,36 @@
 
       const lineObj = linieBaza.find(x => x.numer === zalogowanyKierowcaObj.activeLine);
       
-      // USTALANIE TRASY NA PODSTAWIE KIERUNKU (PARZYSTE / NIEPARZYSTE KÓŁKO)
+      // USTALENIE KIERUNKU (PIERWSZE KÓŁKO A->B ZAMIAST UNDEFINED)
+      const currentDir = zalogowanyKierowcaObj.currentDirection || "AB";
       let trasa = [];
-      let isDirectionBA = (zalogowanyKierowcaObj.currentLoop % 2 !== 0);
 
       if (lineObj) {
-        if (isDirectionBA && lineObj.przystankiBA && lineObj.przystankiBA.length > 0) {
+        if (currentDir === "BA" && lineObj.przystankiBA && lineObj.przystankiBA.length > 0) {
           trasa = lineObj.przystankiBA;
         } else {
           trasa = lineObj.przystankiAB || lineObj.przystanki || [];
         }
       }
 
-      document.getElementById('active-line-name').innerText = zalogowanyKierowcaObj.activeLine;
+      const isBreak = zalogowanyKierowcaObj.isOnBreak;
+
+      document.getElementById('active-line-name').innerText = isBreak ? "PRZERWA" : (zalogowanyKierowcaObj.activeLine || "---");
       document.getElementById('current-loop-num').innerText = zalogowanyKierowcaObj.completedLoops + 1;
-      document.getElementById('max-loops-num').innerText = zalogowanyKierowcaObj.assignedLoops;
+      document.getElementById('max-loops-num').innerText = zalogowanyKierowcaObj.assignedLoops || 5;
 
       const titleRoute = document.getElementById('active-route-title');
-      if (lineObj) {
-        titleRoute.innerText = isDirectionBA ? (lineObj.kierunekBA || "Kierunek B -> A") : (lineObj.kierunekAB || lineObj.kierunek || "Kierunek A -> B");
+      if (isBreak) {
+        titleRoute.innerText = "PRZERWA SŁUŻBOWA / POSTÓJ";
+      } else if (lineObj) {
+        titleRoute.innerText = (currentDir === "BA") ? (lineObj.kierunekBA || "Kierunek B -> A") : (lineObj.kierunekAB || lineObj.kierunek || "Kierunek A -> B");
+      } else {
+        titleRoute.innerText = "Brak wybranej linii";
+      }
+
+      if (isBreak) {
+        box.innerHTML = `<div style="font-size: 14px; color: var(--accent-cream); text-align: center; margin-top: 40px; font-weight: 700;">☕ TRWA PRZERWA SŁUŻBOWA<br><span style="font-size: 12px; color: var(--text-dim); font-weight: 400;">Czekaj na zakończenie odliczania przerwy.</span></div>`;
+        return;
       }
 
       if (trasa.length === 0) {
@@ -1731,7 +1705,7 @@
         row.innerHTML = `
           <div>
             <strong>${idx + 1}. ${p.nazwa}</strong>
-            <div style="font-size: 10px; color: var(--text-dim);">Zapowiedź: "${p.mowiona}"</div>
+            <div style="font-size: 10px; color: var(--text-dim);">Zapowiedź: "${p.mowiona || p.nazwa}"</div>
           </div>
           <div style="font-weight: 700; color: var(--accent-cream); font-size: 12px;">${p.czas} s</div>
         `;
@@ -1739,10 +1713,48 @@
       });
     }
 
-    // STEROWANIE KURSEM DLA KIEROWCY
+    // URUCHOMIENIE ODLICZANIA PRZERWY Z AUTOMATYCZNYM PRZEŁĄCZENIEM KIERUNKU
+    function startBreakCountdown(secTotal) {
+      clearInterval(breakCountdownTimer);
+      let secLeft = secTotal;
+
+      const timerElem = document.getElementById('timer');
+      const timerLabel = document.getElementById('timer-label');
+      timerLabel.innerText = "CZAS PRZERWY";
+
+      breakCountdownTimer = setInterval(async () => {
+        if (secLeft <= 0) {
+          clearInterval(breakCountdownTimer);
+          timerElem.innerText = "00:00";
+
+          // PRZEŁĄCZANIE KIERUNKU PO PRZERWIE (AB -> BA lub BA -> AB)
+          const oldDir = zalogowanyKierowcaObj.currentDirection || "AB";
+          const newDir = (oldDir === "AB") ? "BA" : "AB";
+
+          await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
+            isOnBreak: false,
+            statusText: "Gotowy",
+            currentDirection: newDir,
+            currentStopIdx: 0,
+            breakSecondsRemaining: 0
+          });
+
+          czytajTekst("Przerwa zakończona. Automatycznie zmieniono kierunek jazdy.");
+          document.getElementById('loop-overlay').style.display = 'none';
+          renderStopsKierowcy();
+          return;
+        }
+
+        const m = Math.floor(secLeft / 60);
+        const s = secLeft % 60;
+        timerElem.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        secLeft--;
+      }, 1000);
+    }
+
     async function startCourseDrive() {
       if (!zalogowanyKierowcaObj) return;
-      if (zalogowanyKierowcaObj.isOnBreak) return alert("Masz aktywną przerwę dyspozytorską! Kurs zablokowany.");
+      if (zalogowanyKierowcaObj.isOnBreak) return alert("Masz aktywną przerwę dyspozytorską! Kurs wstrzymany.");
 
       await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
         statusText: "W trakcie kursu",
@@ -1750,41 +1762,58 @@
       });
 
       pokazWidok('driver-kurs');
-      czytajTekst("Rozpoczynamy kurs. Proszę zamknąć drzwi.", true);
+      czytajTekst("Rozpoczynamy kurs.");
       renderStopsKierowcy();
     }
 
     async function nextStopDrive() {
-      if (!zalogowanyKierowcaObj) return;
+      if (!zalogowanyKierowcaObj || zalogowanyKierowcaObj.isOnBreak) return;
 
       const lineObj = linieBaza.find(x => x.numer === zalogowanyKierowcaObj.activeLine);
-      let isDirectionBA = (zalogowanyKierowcaObj.currentLoop % 2 !== 0);
-      let trasa = lineObj ? (isDirectionBA && lineObj.przystankiBA && lineObj.przystankiBA.length > 0 ? lineObj.przystankiBA : (lineObj.przystankiAB || lineObj.przystanki || [])) : [];
+      const currentDir = zalogowanyKierowcaObj.currentDirection || "AB";
+      let trasa = lineObj ? ((currentDir === "BA" && lineObj.przystankiBA && lineObj.przystankiBA.length > 0) ? lineObj.przystankiBA : (lineObj.przystankiAB || lineObj.przystanki || [])) : [];
 
       if (zalogowanyKierowcaObj.currentStopIdx < trasa.length - 1) {
         const nextIdx = zalogowanyKierowcaObj.currentStopIdx + 1;
-        await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
-          currentStopIdx: nextIdx
-        });
+        await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), { currentStopIdx: nextIdx });
 
         const stop = trasa[nextIdx];
-        czytajTekst(`Następny przystanek: ${stop.mowiona || stop.nazwa}`, true);
+        czytajTekst(`Następny przystanek: ${stop.mowiona || stop.nazwa}`);
         renderStopsKierowcy();
       } else {
-        // KOŃCZENIE KÓŁKA
-        const newCompleted = zalogowanyKierowcaObj.completedLoops + 1;
-        const nextLoopIndex = zalogowanyKierowcaObj.currentLoop + 1;
+        // KOŃCZENIE KÓŁKA I SPRAWDZANIE CZY MASZ PRZERWĘ
+        const newCompleted = (zalogowanyKierowcaObj.completedLoops || 0) + 1;
+        const breakAfter = zalogowanyKierowcaObj.breakAfterLoop || 1;
+        const breakDuration = zalogowanyKierowcaObj.breakDurationMin || 5;
 
-        await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
-          completedLoops: newCompleted,
-          currentLoop: nextLoopIndex,
-          currentStopIdx: 0,
-          statusText: "Postój"
-        });
+        // CZY TO KÓŁKO PO KTÓRYM JEST PRZERWA?
+        const checkBreak = (newCompleted % breakAfter === 0);
 
-        czytajTekst("Koniec trasy. Dziękujemy za jazdę.", true);
-        document.getElementById('loop-overlay').style.display = 'flex';
-        renderStopsKierowcy();
+        if (checkBreak) {
+          await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
+            completedLoops: newCompleted,
+            isOnBreak: true,
+            statusText: "Przerwa",
+            currentStopIdx: 0
+          });
+
+          czytajTekst(`Koniec trasy. Rozpoczynasz przerwę ${breakDuration} minut.`);
+          renderStopsKierowcy();
+          startBreakCountdown(breakDuration * 60);
+        } else {
+          // ZWYKŁA ZMIANA KIERUNKU BEZ PRZERWY
+          const nextDir = (currentDir === "AB") ? "BA" : "AB";
+          await update(ref(db, `kierowcy/${zalogowanyKierowcaObj.id}`), {
+            completedLoops: newCompleted,
+            currentDirection: nextDir,
+            currentStopIdx: 0,
+            statusText: "Postój"
+          });
+
+          czytajTekst("Koniec trasy. Następny kurs w przeciwnym kierunku.");
+          document.getElementById('loop-overlay').style.display = 'flex';
+          renderStopsKierowcy();
+        }
       }
     }
 
@@ -1793,7 +1822,6 @@
       await startCourseDrive();
     }
 
-    // FORMULARZ ZGŁOSZEŃ Z DYKTOWANIEM GŁOSOWYM
     let recognition = null;
     function initSpeechRecognition() {
       if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -1824,15 +1852,11 @@
         recognition.start();
         document.getElementById('btn-start-voice').style.display = 'none';
         document.getElementById('btn-stop-voice').style.display = 'inline-flex';
-      } else {
-        alert("Twoja przeglądarka nie obsługuje rozpoznawania mowy!");
-      }
+      } else alert("Twoja przeglądarka nie obsługuje rozpoznawania mowy!");
     }
 
     function stopVoiceInput() {
-      if (recognition) {
-        recognition.stop();
-      }
+      if (recognition) recognition.stop();
     }
 
     async function sendDriverRequest() {
@@ -1841,7 +1865,6 @@
       const typSelect = document.getElementById('p-typ').value;
       const wlasnyTemat = document.getElementById('p-wlasny-temat').value.trim();
       const tresc = document.getElementById('p-powod').value.trim();
-
       const finalTyp = (typSelect === 'Własny temat' && wlasnyTemat) ? wlasnyTemat : typSelect;
 
       if (!tresc) return alert("Wpisz opis swojej prośby / zgłoszenia!");
@@ -1863,7 +1886,7 @@
       alert("Twoje zgłoszenie zostało wysłane do dyspozytorni!");
     }
 
-    // PODŁĄCZENIE ZDARZEŃ DO PRZYCISKÓW
+    // PODŁĄCZENIE ZDARZEŃ I PRZYCISKÓW
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('btn-login-main').onclick = zalogujDoSystemu;
       document.getElementById('btn-logout').onclick = wyloguj;
@@ -1890,38 +1913,25 @@
       document.getElementById('btn-save-schedule').onclick = zapiszGrafik;
       document.getElementById('btn-send-dispatcher-msg').onclick = sendDispatcherMessage;
 
-      const selectTypGrafik = document.getElementById('g-select-typ');
-      if (selectTypGrafik) {
-        selectTypGrafik.onchange = (e) => {
-          const details = document.getElementById('section-grafik-linia-details');
-          if (e.target.value === 'linia') details.style.display = 'block';
-          else details.style.display = 'none';
-        };
-      }
-
       // KIEROWCA
-      document.getElementById('btn-home-start-course').onclick = () => pokazWidok('driver-kurs');
-      document.getElementById('btn-grafik-start-course').onclick = () => pokazWidok('driver-kurs');
+      document.getElementById('btn-home-start-course').onclick = startCourseDrive;
+      document.getElementById('btn-grafik-start-course').onclick = startCourseDrive;
       document.getElementById('btn-start-drive').onclick = startCourseDrive;
       document.getElementById('btn-next-stop').onclick = nextStopDrive;
       document.getElementById('btn-next-loop-action').onclick = continueNextLoop;
 
       document.getElementById('btn-play-announcement').onclick = () => {
         const val = document.getElementById('quick-announcement-select').value;
-        czytajTekst(val, false);
-      };
-
-      document.getElementById('p-typ').onchange = (e) => {
-        const c = document.getElementById('container-wlasny-temat');
-        if (e.target.value === 'Własny temat') c.style.display = 'block';
-        else c.style.display = 'none';
+        czytajTekst(val);
       };
 
       document.getElementById('btn-start-voice').onclick = startVoiceInput;
       document.getElementById('btn-stop-voice').onclick = stopVoiceInput;
       document.getElementById('btn-send-driver-request').onclick = sendDriverRequest;
 
-      initSpeechRecognition();
+      document.getElementById('p-typ').onchange = (e) => {
+        document.getElementById('container-wlasny-temat').style.display = (e.target.value === 'Własny temat') ? 'block' : 'none';
+      };
     });
   </script>
 </body>
